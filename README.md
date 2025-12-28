@@ -135,8 +135,47 @@ pnpm dev
 
 ## 📋 Requisitos
 
+### Runtime
 - **Node.js**: >= 18.0.0
-- **pnpm**: >= 8.0.0
+- **pnpm**: >= 8.0.0 (recomendado) o npm/yarn
+
+### TypeScript
+
+Este paquete utiliza ESM (`"type": "module"`) y exports con subpaths. Para que TypeScript resuelva correctamente los imports, tu proyecto **debe** tener la siguiente configuración en `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "target": "ES2022",
+    // ... otras opciones
+  }
+}
+```
+
+**⚠️ Importante**: Sin esta configuración, TypeScript no podrá resolver los subpaths como `@ai-pip/core/csl`, `@ai-pip/core/isl`, etc., y obtendrás errores como `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+
+#### Ejemplo de `tsconfig.json` completo
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+#### Si usas un runtime como `tsx` o `ts-node`
+
+Aunque uses `tsx` o `ts-node` para ejecutar TypeScript directamente, **aún necesitas** la configuración correcta en `tsconfig.json` para que TypeScript resuelva los tipos y los imports correctamente.
 
 ## 📄 Licencia
 
