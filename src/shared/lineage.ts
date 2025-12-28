@@ -1,4 +1,4 @@
-import type { LineageEntry } from '@/csl/value-objects'
+import type { LineageEntry } from '../csl/value-objects'
 
 /**
  * Lineage global - funciones puras para manejar linaje entre capas

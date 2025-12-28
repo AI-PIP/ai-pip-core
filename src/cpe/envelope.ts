@@ -28,7 +28,7 @@
  * // - lineage: linaje completo
  * ```
  */
-import type { ISLResult } from '@/isl/types'
+import type { ISLResult } from '../isl/types'
 import type { CPEEvelope, CPEResult } from './types'
 import { createNonce } from './value-objects/Nonce'
 import { createMetadata } from './value-objects/Metadata'
@@ -36,8 +36,8 @@ import { createSignature } from './value-objects/Signature'
 import { EnvelopeError } from './exceptions'
 // Serialización NO es core - va al SDK
 // El core solo define la estructura del envelope
-import { addLineageEntries } from '@/shared/lineage'
-import { createLineageEntry } from '@/csl/value-objects/LineageEntry'
+import { addLineageEntries } from '../shared/lineage'
+import { createLineageEntry } from '../csl/value-objects/LineageEntry'
 
 export function envelope(islResult: ISLResult, secretKey: string): CPEResult {
   const startTime = Date.now()

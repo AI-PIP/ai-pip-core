@@ -1,6 +1,6 @@
 {
   "name": "@ai-pip/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, CPE, ALL, ModelGateway)",
   "type": "module",
   "main": "./src/index.ts",
@@ -46,7 +46,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:install": "node test-package-install.js"
   },
   "engines": {
     "node": ">= 18.0.0"

@@ -3,7 +3,7 @@
  */
 
 // Importar tipos de CSL
-import type { LineageEntry } from '@/csl/value-objects'
+import type { LineageEntry } from '../csl/value-objects'
 
 /**
  * ProtocolVersion - Versión del protocolo AI-PIP

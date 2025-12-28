@@ -3,7 +3,7 @@
  */
 
 // Importar tipos de CSL y value objects
-import type { LineageEntry, TrustLevel } from '@/csl/value-objects'
+import type { LineageEntry, TrustLevel } from '../csl/value-objects'
 import type { PiDetectionResult } from './value-objects/PiDetectionResult'
 import type { AnomalyScore } from './value-objects/AnomalyScore'
 
