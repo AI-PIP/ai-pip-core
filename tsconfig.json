@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+  
+      "outDir": "dist",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"]
+      },
+  
+      "strict": true,
+  
+      "declaration": true,
+      "emitDeclarationOnly": true,
+      "declarationMap": false,
+  
+      "types": ["node"],
+  
+      "noUncheckedIndexedAccess": true,
+      "exactOptionalPropertyTypes": true,
+  
+      "skipLibCheck": true
+    },
+    "include": ["src/**/*", "test/**/*"]
+}

@@ -1,0 +1,77 @@
+import { createTrustLevel } from './value-objects/TrustLevel'
+import type { Origin } from './value-objects/Origin'
+import { originMap } from './value-objects/Origin-map'
+import { ClassificationError } from './exceptions'
+import { OriginType } from './types'
+import type { Source } from './types'
+
+/**
+ * Clasifica un source y retorna su TrustLevel - función pura determinista
+ * 
+ * @remarks
+ * - 100% determinista: mismo source → mismo trust level, siempre
+ * - Sin efectos secundarios: función pura
+ * - Sin análisis de contenido: solo el source importa
+ * 
+ * @param source - El source del contenido ('DOM' | 'UI' | 'SYSTEM' | 'API')
+ * @returns TrustLevel determinado por el source
+ * 
+ * @throws {ClassificationError} Si el source no puede ser clasificado
+ * 
+ * @example
+ * ```typescript
+ * const trust = classifySource('UI')
+ * // Returns: { value: 'TC' }
+ * 
+ * const trust2 = classifySource('DOM')
+ * // Returns: { value: 'STC' }
+ * ```
+ */
+export function classifySource(source: Source) {
+  // Mapeo simple: Source → OriginType → TrustLevel
+  const sourceToOriginType: Record<Source, OriginType> = {
+    'UI': OriginType.SYSTEM_GENERATED,      // UI directa → TC
+    'SYSTEM': OriginType.SYSTEM_GENERATED,   // System → TC
+    'DOM': OriginType.DOM_VISIBLE,           // DOM → STC
+    'API': OriginType.NETWORK_FETCHED        // API → UC
+  }
+  
+  const originType = sourceToOriginType[source]
+  
+  if (!originType) {
+    throw new ClassificationError(`Source '${source}' cannot be classified`)
+  }
+  
+  const trustLevelType = originMap.get(originType)
+  
+  if (!trustLevelType) {
+    throw new ClassificationError(
+      `Origin type '${originType}' is not mapped in originMap. ` +
+      `All OriginType values must have a corresponding TrustLevel mapping.`
+    )
+  }
+  
+  return createTrustLevel(trustLevelType)
+}
+
+/**
+ * Clasifica un Origin y retorna su TrustLevel - función pura determinista
+ * 
+ * @param origin - El Origin value object
+ * @returns TrustLevel determinado por el origin
+ * 
+ * @throws {ClassificationError} Si el origin no está mapeado
+ */
+export function classifyOrigin(origin: Origin) {
+  const trustLevelType = originMap.get(origin.type)
+  
+  if (!trustLevelType) {
+    throw new ClassificationError(
+      `Origin type '${origin.type}' is not mapped in originMap. ` +
+      `All OriginType values must have a corresponding TrustLevel mapping.`
+    )
+  }
+  
+  return createTrustLevel(trustLevelType)
+}
+

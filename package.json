@@ -1,0 +1,78 @@
+{
+  "name": "@ai-pip/core",
+  "version": "0.1.0",
+  "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, CPE, ALL, ModelGateway)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./csl": {
+      "types": "./src/csl/index.ts",
+      "import": "./src/csl/index.ts"
+    },
+    "./isl": {
+      "types": "./src/isl/index.ts",
+      "import": "./src/isl/index.ts"
+    },
+    "./cpe": {
+      "types": "./src/cpe/index.ts",
+      "import": "./src/cpe/index.ts"
+    },
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "import": "./src/shared/index.ts"
+    }
+
+  },
+  "files": [
+    "src",
+    "tsconfig.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "type-check": "tsc --noEmit",
+    "build": "tsc",
+    "lint": "eslint src --max-warnings=0",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "engines": {
+    "node": ">= 18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "security",
+    "prompt-injection",
+    "context-processing",
+    "zero-trust"
+  ],
+  "author": "MasliahDev d3vTek-mv@outlook.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AI-PIP/ai-pip-core"
+  },
+  "bugs": {
+    "url": "https://github.com/AI-PIP/ai-pip-core/issues"
+  },
+  "homepage": "https://github.com/AI-PIP/ai-pip-core#readme",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.24.0",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^22.19.3",
+    "@vitest/coverage-v8": "^2.1.9",
+    "eslint": "^9.39.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1",
+    "vitest": "^2.1.9"
+  }
+}
