@@ -2,7 +2,9 @@
  * CPE Value Objects - Exports
  */
 
-export * from './Nonce'
-export * from './Metadata'
-export * from './Signature'
+export type { Nonce } from './Nonce'
+export { createNonce, isValidNonce, equalsNonce } from './Nonce'
+export { createMetadata, isValidMetadata } from './Metadata'
+export type { SignatureVO } from './Signature'
+export { createSignature, verifySignature, isValidSignatureFormat } from './Signature'
 

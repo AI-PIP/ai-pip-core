@@ -25,10 +25,19 @@ export { createSignature } from './value-objects/Signature'
 export type { SignatureVO } from './value-objects/Signature'
 
 // Exceptions
-export * from './exceptions'
+export { EnvelopeError } from './exceptions/EnvelopeError'
 
 // Types
-export * from './types'
+export type {
+  ProtocolVersion,
+  Timestamp,
+  NonceValue,
+  SignatureAlgorithm,
+  Signature,
+  CPEMetadata,
+  CPEEvelope,
+  CPEResult
+} from './types'
 
 // Serialización y verificación NO son core - van al SDK
 // El core solo define la estructura del envelope, no implementa serialización

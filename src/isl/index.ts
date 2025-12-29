@@ -10,11 +10,44 @@
 export { sanitize } from './sanitize'
 
 // Value objects
-export * from './value-objects'
+export type { PiDetection, PiDetectionResult, AnomalyScore, Pattern } from './value-objects'
+export {
+  createPiDetection,
+  getDetectionLength,
+  isHighConfidence,
+  isMediumConfidence,
+  isLowConfidence,
+  createPiDetectionResult,
+  hasDetections,
+  getDetectionCount,
+  getDetectionsByType,
+  getHighestConfidenceDetection,
+  createAnomalyScore,
+  isHighRisk,
+  isWarnRisk,
+  isLowRisk,
+  createPattern,
+  matchesPattern,
+  findMatch,
+  MAX_CONTENT_LENGTH,
+  MAX_PATTERN_LENGTH,
+  MAX_MATCHES
+} from './value-objects'
 
 // Exceptions
-export * from './exceptions'
+export { SanitizationError } from './exceptions/SanitizationError'
 
 // Types
-export * from './types'
+export type {
+  RiskScore,
+  AnomalyAction,
+  Position,
+  BlockedIntent,
+  SensitiveScope,
+  ProtectedRole,
+  ImmutableInstruction,
+  RemovedInstruction,
+  ISLSegment,
+  ISLResult
+} from './types'
 

@@ -1,2 +1,2 @@
-export * from './SanitizationError'
+export { SanitizationError } from './SanitizationError'
 

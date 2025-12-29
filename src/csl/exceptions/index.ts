@@ -1,3 +1,3 @@
-export * from './ClassificationError'
-export * from './SegmentationError'
+export { ClassificationError } from './ClassificationError'
+export { SegmentationError } from './SegmentationError'
 

@@ -9,7 +9,7 @@ import type { Nonce as NonceVO } from './Nonce'
 /**
  * Versión actual del protocolo
  */
-export const CURRENT_PROTOCOL_VERSION: ProtocolVersion = '1.0.0'
+export const CURRENT_PROTOCOL_VERSION: ProtocolVersion = '0.1.4'
 
 /**
  * Crea metadata de seguridad para el envelope

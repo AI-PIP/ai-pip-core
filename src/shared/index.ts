@@ -7,7 +7,12 @@
  */
 
 // Lineage básico
-export * from './lineage'
+export {
+  addLineageEntry,
+  addLineageEntries,
+  filterLineageByStep,
+  getLastLineageEntry
+} from './lineage'
 
 // Funciones de auditoría NO son core - van al SDK/tooling
 // El core solo preserva linaje, no lo analiza
