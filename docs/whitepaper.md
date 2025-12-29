@@ -154,6 +154,14 @@ Funciones que, dado el mismo input, siempre producen el mismo output y no tienen
 - `sanitize(cslResult: CSLResult): ISLResult` - Produce señales de sanitización
 - `envelope(islResult: ISLResult, secretKey: string): CPEResult` - Define estructura del envelope
 
+**Features Compartidas (Shared)**:
+- `addLineageEntry(lineage, entry): LineageEntry[]` - Agrega entrada al linaje global
+- `addLineageEntries(lineage, entries): LineageEntry[]` - Agrega múltiples entradas
+- `filterLineageByStep(lineage, step): LineageEntry[]` - Filtra linaje por step
+- `getLastLineageEntry(lineage): LineageEntry | undefined` - Obtiene última entrada
+
+**Nota**: Shared contiene features fundamentales del protocolo que se utilizan en múltiples capas. El linaje (lineage) es global e incremental entre capas, permitiendo auditoría completa del procesamiento. No pertenece a una sola capa (CSL, ISL o CPE), sino que es compartido y se incrementa a través de todo el pipeline.
+
 #### Value Objects Inmutables
 
 Tipos de datos definidos por su valor, sin identidad:
@@ -163,6 +171,9 @@ Tipos de datos definidos por su valor, sin identidad:
 - `LineageEntry` - Entrada de linaje (step, timestamp)
 - `PiDetection` - Detección de prompt injection
 - `AnomalyScore` - Score de anomalía
+- `Nonce` - Valor único para prevenir replay attacks
+- `SignatureVO` - Firma criptográfica (value + algorithm)
+- `CPEMetadata` - Metadata de seguridad del envelope
 
 #### Contratos Semánticos
 
@@ -170,7 +181,16 @@ Especificaciones formales de las interfaces entre capas:
 
 - **CSL → ISL**: `CSLResult` con segmentos clasificados
 - **ISL → CPE**: `ISLResult` con contenido sanitizado y señales
-- **CPE → ModelGateway**: `CPEResult` con envelope estructurado
+- **CPE → SDK**: `CPEResult` con envelope estructurado y señales semánticas
+
+**Features Compartidas (Shared)**:
+- Linaje global e incremental utilizado por todas las capas para auditoría
+- El linaje se incrementa a través de todo el pipeline (CSL → ISL → CPE)
+- No forman parte del flujo secuencial de capas, pero son features fundamentales del protocolo
+
+**Contratos SDK** (fuera del core semántico):
+- **CPE → ModelGateway**: El SDK recibe `CPEResult` y decide acciones operativas (ALLOW/BLOCK/WARN)
+- **CPE → AAL**: El SDK recibe señales del core y aplica locks de acciones según políticas
 
 #### Lo que NO es Core
 
@@ -187,11 +207,17 @@ El core semántico **NO** contiene:
 
 El SDK proporciona una implementación de referencia del protocolo que incluye:
 
+#### Capas del SDK
+
+- **AAL (Agent Action Lock)**: Implementa locks de acciones basándose en señales del core
+- **ModelGateway**: Evalúa señales del core y decide acciones finales (ALLOW/BLOCK/WARN), enruta al proveedor de IA
+
 #### Funciones de Implementación
 
 - **Hash y Criptografía**: `hashContent()`, `verifyContentHash()`, `verifySignature()`
 - **Detección**: `detectMimeType()`, `normalizeBasic()`, `segmentSemantic()`
-- **Decisiones**: `shouldBlock()`, `shouldWarn()`, políticas de acceso
+- **Decisiones**: `shouldBlock()`, `shouldWarn()`, políticas de acceso (ModelGateway)
+- **Locks de Acciones**: `lockNavigation()`, `preventAction()`, `applyActionLock()` (AAL)
 - **Serialización**: `serializeContent()`, `serializeMetadata()`
 - **Auditoría**: `getLineageStats()`, `getLineageByNotes()`
 
@@ -201,6 +227,7 @@ El SDK proporciona una implementación de referencia del protocolo que incluye:
 - `UIAdapter` - Adaptador para interfaces de usuario
 - `CryptoHashGenerator` - Generador de hash criptográfico
 - `SystemTimestampProvider` - Proveedor de timestamps
+- `ModelProviderAdapter` - Adaptador para proveedores de IA (OpenAI, Anthropic, etc.)
 
 #### Factory Functions
 
@@ -248,7 +275,21 @@ El protocolo produce señales (TrustLevel, AnomalyScore, PiDetection), no ejecut
 
 ### 6.2 Capas del Protocolo
 
-El protocolo AI-PIP consta de cinco capas principales que procesan el contenido de forma secuencial:
+El protocolo AI-PIP consta de **tres capas principales del core semántico** que procesan el contenido de forma secuencial:
+
+**Core Semántico (implementado)**:
+- CSL: Context Segmentation Layer
+- ISL: Instruction Sanitization Layer
+- CPE: Cryptographic Prompt Envelope
+
+**Features Compartidas (Shared)**:
+- Features fundamentales del protocolo utilizadas en múltiples capas
+- Linaje global e incremental para auditoría entre capas
+- No es una capa del protocolo, pero es parte esencial del core semántico
+
+**SDK (implementación operativa)**:
+- AAL: Agent Action Lock
+- ModelGateway
 
 #### 6.2.1 CSL: Context Segmentation Layer
 
@@ -326,34 +367,63 @@ El protocolo AI-PIP consta de cinco capas principales que procesan el contenido 
 - Linaje completo preservado
 - Estructura inmutable `CPEResult`
 
-#### 6.2.4 AAL: Agent Action Lock
+### 6.3 Features Compartidas (Shared)
 
-**Rol Semántico (Core)**:
-- Define señales de alineación de acciones
-- Produce recomendaciones semánticas sobre acciones permitidas
+**Nota**: Shared no es una capa del protocolo, pero contiene features fundamentales que se utilizan en múltiples capas.
 
-**Rol Operativo (SDK)**:
-- Implementa locks de acciones
+**Linaje Global e Incremental**:
+El linaje (lineage) es una parte fundamental del protocolo AI-PIP para la auditoría entre capas. No pertenece a una sola capa (CSL, ISL o CPE), sino que es **global e incremental** a través de todo el pipeline de procesamiento.
+
+**Features Compartidas**:
+- `addLineageEntry(lineage, entry): LineageEntry[]` - Agrega una entrada al linaje global
+- `addLineageEntries(lineage, entries): LineageEntry[]` - Agrega múltiples entradas al linaje
+- `filterLineageByStep(lineage, step): LineageEntry[]` - Filtra entradas por step para auditoría
+- `getLastLineageEntry(lineage): LineageEntry | undefined` - Obtiene la última entrada del linaje
+
+**Propósito**:
+- **Linaje Global**: El linaje se incrementa a través de todas las capas (CSL → ISL → CPE)
+- **Auditoría Completa**: Permite rastrear todo el procesamiento desde el origen hasta el envelope final
+- **Trazabilidad**: Cada capa agrega su entrada al linaje, creando un historial completo e inmutable
+- **Funciones Puras**: Sin efectos secundarios, garantizando determinismo
+
+**Características del Linaje**:
+- **Incremental**: Cada capa agrega su entrada al linaje existente
+- **Global**: No pertenece a una sola capa, es compartido entre todas
+- **Inmutable**: Las funciones retornan nuevos arrays, nunca modifican el linaje original
+- **Auditable**: Permite auditoría completa del procesamiento del prompt
+
+**Nota**: Las funciones de Shared están disponibles desde el entry point principal `@ai-pip/core`, no como subpath específico.
+
+### 6.4 Componentes del SDK
+
+Las siguientes capas pertenecen al SDK (implementación operativa), no al core semántico, ya que requieren decisiones operativas y efectos secundarios:
+
+#### 6.3.1 AAL: Agent Action Lock
+
+**Rol en el SDK**:
+- Implementa locks de acciones basándose en señales del core
 - Bloquea navegación cuando es necesario
 - Previene lectura de contenido riesgoso
+- Aplica políticas de seguridad operativas
 
 **Estado**: En diseño
 
-#### 6.2.5 ModelGateway
+**Razón para estar en SDK**: AAL requiere efectos secundarios (bloquear navegación, prevenir acciones) y decisiones operativas que no pertenecen al core semántico puro.
 
-**Rol Semántico (Core)**:
-- Evalúa señales de CSL, ISL, CPE, AAL
-- Produce recomendación semántica (ALLOW/BLOCK/WARN)
+#### 6.3.2 ModelGateway
 
-**Rol Operativo (SDK)**:
-- Aplica políticas de acceso
+**Rol en el SDK**:
+- Evalúa señales de CSL, ISL, CPE, Shared
+- Aplica políticas de acceso basándose en las señales
 - Verifica firmas criptográficas
-- Decide acciones finales
+- Decide acciones finales (ALLOW/BLOCK/WARN)
 - Enruta al proveedor de IA
 
 **Estado**: En diseño
 
-### 6.3 Contratos Semánticos entre Capas
+**Razón para estar en SDK**: ModelGateway requiere decisiones operativas finales, enrutamiento a proveedores externos, y efectos secundarios que no pertenecen al core semántico puro.
+
+### 6.5 Contratos Semánticos entre Capas
 
 Los contratos definidos son **contratos semánticos**, no implementaciones técnicas. Especifican las estructuras de datos que fluyen entre capas:
 
@@ -380,14 +450,18 @@ Los contratos definidos son **contratos semánticos**, no implementaciones técn
 - Envelope con payload, metadata, signature
 - Linaje preservado
 
-#### Contrato CPE → ModelGateway
+#### Contrato CPE → SDK
 
 **Input**: `CPEResult`
 - Envelope criptográfico estructurado
 - Metadata de seguridad
 - Linaje completo
+- Señales semánticas (TrustLevel, AnomalyScore, PiDetection)
 
-**Output**: Recomendación semántica (ALLOW/BLOCK/WARN)
+**Output del SDK**: 
+- Decisiones operativas (ALLOW/BLOCK/WARN) - ModelGateway
+- Locks de acciones aplicados - AAL
+- Enrutamiento al proveedor de IA - ModelGateway
 
 ---
 
@@ -398,6 +472,7 @@ El protocolo procesa contenido mediante un pipeline funcional puro:
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    CORE SEMÁNTICO                        │
+│              (Funciones Puras, Sin Efectos Secundarios) │
 │                                                          │
 │  CSLInput                                               │
 │    │                                                     │
@@ -411,19 +486,34 @@ El protocolo procesa contenido mediante un pipeline funcional puro:
 │  envelope() → CPEResult                                 │
 │    │                                                     │
 │    ▼                                                     │
-│  Señales Semánticas                                      │
+│  CPEResult con Señales Semánticas                        │
+│  (TrustLevel, AnomalyScore, PiDetection)                │
+│                                                          │
+│  Linaje Global (Shared): Incremental a través de        │
+│  todas las capas (CSL → ISL → CPE) para auditoría       │
 └───────────────────┬─────────────────────────────────────┘
                     │
                     ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    SDK / IMPLEMENTACIÓN                  │
+│         (Decisiones Operativas, Efectos Secundarios)   │
 │                                                          │
+│  ModelGateway:                                           │
+│  - Evalúa señales del core                              │
+│  - Verifica firmas criptográficas                       │
+│  - Decide acciones (ALLOW/BLOCK/WARN)                   │
+│  - Enruta al proveedor de IA                            │
+│                                                          │
+│  AAL (Agent Action Lock):                                │
+│  - Aplica locks de acciones                             │
+│  - Bloquea navegación si es necesario                   │
+│  - Previene lectura de contenido riesgoso               │
+│                                                          │
+│  Utilidades:                                             │
 │  - Lee DOM                                               │
 │  - Genera hashes                                         │
 │  - Serializa contenido                                   │
-│  - Verifica firmas                                       │
-│  - Decide acciones (ALLOW/BLOCK/WARN)                     │
-│  - Bloquea si es necesario                               │
+│  - Auditoría y análisis                                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -559,10 +649,14 @@ Este trabajo abre el camino para:
 
 ### Documentación del Protocolo
 
-- [Core Semántico](./core-semantic.md) - Especificación del core puro
-- [SDK Reference](./sdk-reference.md) - Guía del SDK de implementación
 - [Arquitectura Semántica](./architecture.md) - Arquitectura detallada del protocolo
-- [Especificaciones de Capas](./layer/) - Documentación de cada capa
+- [Especificaciones de Capas](./layer/) - Documentación de cada capa:
+  - [CSL (Context Segmentation Layer)](./layer/csl.md)
+  - [ISL (Instruction Sanitization Layer)](./layer/isl.md)
+  - [CPE (Cryptographic Prompt Envelope)](./layer/cpe.md)
+  - [Shared (Funciones Compartidas)](./layer/shared.md)
+- [SDK Reference](./sdk-reference.md) - Guía del SDK de implementación
+- [SDK](./SDK.md) - Documentación completa del SDK
 
 ### Implementación
 

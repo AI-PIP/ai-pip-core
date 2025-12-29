@@ -8,9 +8,9 @@
 
 ## 📊 Estado Actual
 
-### ✅ Fase 1: Capas Core (En Progreso)
+### ✅ Fase 1: Capas Core
 
-**Estado**: Parcialmente completado
+**Estado**: Completado
 
 #### Capas Implementadas ✅
 
@@ -34,18 +34,10 @@
   - Construcción de envelope
   - Preservación de linaje completo
 
-#### Capas Pendientes ⏳
-
-- **AAL (Agent Action Lock)**: ⏳ Pendiente
-  - Bloqueo de acciones de agentes
-  - Validación de acciones permitidas
-  - Prevención de acciones maliciosas
-
-- **Model Gateway**: ⏳ Pendiente
-  - Interfaz con modelos de IA
-  - Validación de respuestas
-  - Gestión de rate limiting
-  - Monitoreo y observabilidad
+- **Shared (Features Compartidas)**: ✅ Completado
+  - Linaje global e incremental
+  - Funciones puras compartidas entre capas
+  - Auditoría completa del procesamiento
 
 ---
 
@@ -55,87 +47,93 @@
 
 **Objetivo**: Implementar todas las capas core del protocolo AI-PIP
 
-**Estado**: 60% completado
+**Estado**: 100% completado (optimizaciones pendientes)
 
 #### Tareas Completadas ✅
 
 - [x] CSL - Context Segmentation Layer
 - [x] ISL - Instruction Sanitization Layer
 - [x] CPE - Cryptographic Prompt Envelope
+- [x] Shared - Features compartidas (linaje global)
 - [x] Value objects inmutables
 - [x] Funciones puras sin efectos secundarios
-- [x] Sistema de linaje (lineage)
+- [x] Sistema de linaje (lineage) global e incremental
 - [x] Tests unitarios (>80% cobertura)
-- [x] Documentación de capas
+- [x] Documentación completa de capas
+- [x] Whitepaper del protocolo
 
-#### Tareas Pendientes ⏳
+#### Tareas Pendientes 🔄
 
-- [ ] AAL - Agent Action Lock
-  - [ ] Definición de contratos semánticos
-  - [ ] Value objects
-  - [ ] Funciones puras
-  - [ ] Tests unitarios
-  - [ ] Documentación
+- [ ] Reducir tamaño del core para hacerlo más liviano
+- [ ] Nuevas funciones puras para fortalecer los SDKs
+- [ ] Mejorar calidad de código (refactoring, optimizaciones)
+- [ ] Optimización de rendimiento
+- [ ] Mejoras en la documentación técnica
 
-- [ ] Model Gateway
-  - [ ] Definición de contratos semánticos
-  - [ ] Value objects
-  - [ ] Funciones puras
-  - [ ] Tests unitarios
-  - [ ] Documentación
-
-**Estimación**: Q1 2026
+**Estimación**: Q1-Q2 2026
 
 ---
 
-### 🟢 Fase 2: SDK Implementation
+### 🟢 Fase 2: SDK Implementation (TypeScript/JavaScript)
 
-**Objetivo**: Implementar SDKs para TypeScript y Python que expongan el protocolo de forma usable
+**Objetivo**: Implementar SDK beta funcional y auditable del protocolo AI-PIP para entornos reales
 
 **Estado**: No iniciado
 
-#### SDK TypeScript
+#### SDK Beta - Objetivos Principales
+
+Proveer una implementación funcional y auditable del protocolo AI-PIP capaz de:
+- Detectar, localizar y mitigar prompt injection
+- Identificar superficies de ataque en entornos reales (especialmente navegador)
+- Integrar escaneo DOM completo
+- Proporcionar lineage preciso por nodo
+- Implementar políticas configurables
+- Soportar flujos de agente
+- Habilitar prevención, visualización y auditoría exacta de riesgos antes de la interacción con modelos de IA
+
+#### Tareas del SDK TypeScript/JavaScript
 
 - [ ] Arquitectura hexagonal
 - [ ] Clases y estados para uso por desarrolladores
+- [ ] Escaneo DOM completo y detección de contenido
+- [ ] Lineage preciso por nodo DOM
 - [ ] Serialización/deserialización de envelopes
 - [ ] Gestión de claves secretas
-- [ ] Integración con frameworks populares
+- [ ] Políticas configurables de seguridad
+- [ ] Integración con navegadores (extensiones, inyectables)
+- [ ] Visualización de riesgos y auditoría
+- [ ] Flujos de agente integrados
 - [ ] Documentación y ejemplos
-- [ ] Tests de integración
+- [ ] Tests de integración en entornos reales
 
 #### SDK Python
 
-- [ ] Arquitectura hexagonal
-- [ ] Clases y estados para uso por desarrolladores
-- [ ] Serialización/deserialización de envelopes
-- [ ] Gestión de claves secretas
-- [ ] Integración con frameworks populares
-- [ ] Documentación y ejemplos
-- [ ] Tests de integración
+**Estado**: No planeado hasta finalizar SDK TypeScript/JavaScript
 
-**Estimación**: Q2-Q3 2026
+**Estimación**: Q3-Q4 2026 (después de completar SDK TypeScript)
 
 ---
 
-### 🟡 Fase 3: Mejoras del SDK
+### 🟡 Fase 3: Integración y Testing en Entornos Reales
 
-**Objetivo**: Mejorar los SDKs con funcionalidades avanzadas y optimizaciones
+**Objetivo**: Integrar el protocolo en entornos reales para validar su efectividad y robustez
 
 **Estado**: No iniciado
 
-#### Mejoras Planificadas
+#### Tareas de Integración
 
-- [ ] Caché de resultados
-- [ ] Optimización de rendimiento
-- [ ] Métricas y observabilidad avanzada
-- [ ] Integración con sistemas de logging
-- [ ] Plugins y extensiones
-- [ ] Configuración avanzada
-- [ ] Soporte para múltiples modelos
-- [ ] Rate limiting y throttling
+- [ ] Integración con navegadores reales (Chrome, Firefox, Safari)
+- [ ] Testing en aplicaciones web reales
+- [ ] Validación de detección de prompt injection en casos reales
+- [ ] Testing de rendimiento en producción
+- [ ] Validación de lineage en escenarios complejos
+- [ ] Testing de políticas configurables
+- [ ] Integración con agentes de IA reales
+- [ ] Auditoría de seguridad en entornos reales
+- [ ] Recopilación de métricas y feedback
+- [ ] Optimización basada en resultados reales
 
-**Estimación**: Q4 2026
+**Estimación**: Q3-Q4 2026
 
 ---
 
@@ -144,6 +142,16 @@
 **Objetivo**: Crear un ecosistema alrededor del protocolo AI-PIP e integrar con agentes MCP
 
 **Estado**: No iniciado
+
+#### Implementaciones de Referencia
+
+- [ ] **SDK-browser**
+  - SDK / extensión de navegador basada en AI-PIP
+  - Implementa CSL / ISL / CPE usando el SDK oficial
+  - Detección de contexto oculto en DOM
+  - Integración con agentes de navegador
+  - Bloqueo de acciones mediante AAL (cuando esté disponible)
+  - Caso de uso: navegación web asistida por IA segura
 
 #### Tareas Planificadas
 
@@ -156,6 +164,10 @@
   - [ ] Sanitización de respuestas de agentes MCP
   - [ ] Integración con servidores MCP
   - [ ] Documentación de integración MCP
+- [ ] Mejoras del SDK basadas en feedback
+- [ ] Caché de resultados
+- [ ] Optimización de rendimiento avanzada
+- [ ] Métricas y observabilidad avanzada
 - [ ] Herramientas de desarrollo
 - [ ] CLI tools
 - [ ] Dashboard de monitoreo
@@ -187,22 +199,33 @@
 ## 📈 Métricas de Progreso
 
 ### Fase 1: Capas Core
-- **Progreso**: 60% (3/5 capas completadas)
+- **Progreso**: 100% (3/3 capas core completadas + Shared)
 - **Cobertura de Tests**: 87%
-- **Documentación**: 75%
+- **Documentación**: 100% (capas + whitepaper)
 
 ### Fase 2: SDK Implementation
 - **Progreso**: 0%
-- **Estado**: Esperando completar Fase 1
+- **Estado**: Esperando completar optimizaciones del core
 
 ---
 
 ## 🎯 Objetivos a Corto Plazo
 
-1. **Completar AAL** (Q1 2026)
-2. **Completar Model Gateway** (Q1 2026)
-3. **Alcanzar 100% de Fase 1** (Q1 2026)
-4. **Iniciar desarrollo de SDK TypeScript** (Q2 2026)
+1. **Core Robusto** (Q1-Q2 2026)
+   - Reducir tamaño del core para hacerlo más liviano
+   - Nuevas funciones puras para fortalecer los SDKs
+   - Mejorar calidad de código
+   - Optimizaciones de rendimiento
+
+2. **SDK Beta del Protocolo** (Q2-Q3 2026)
+   - Proveer una implementación funcional y auditable del protocolo AI-PIP
+   - Capaz de detectar, localizar y mitigar prompt injection y superficies de ataque en entornos reales (especialmente navegador)
+   - Integrando escaneo DOM, lineage preciso por nodo, políticas configurables y flujos de agente
+   - Para habilitar prevención, visualización y auditoría exacta de riesgos antes de la interacción con modelos de IA
+
+3. **Testing en Entornos Reales** (Q3-Q4 2026)
+   - Validar efectividad del protocolo en producción
+   - Recopilar métricas y feedback
 
 ---
 

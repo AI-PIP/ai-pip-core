@@ -21,10 +21,13 @@ El protocolo AI-PIP está compuesto por las siguientes capas:
 - **ISL (Instruction Sanitization Layer)**: Sanitiza instrucciones según nivel de confianza
 - **CPE (Cryptographic Prompt Envelope)**: Genera envoltorio criptográfico con firma HMAC-SHA256
 
-### ⏳ Capas Pendientes
+### 🔧 Features Compartidas
 
-- **AAL (Agent Action Lock)**: Bloqueo de acciones de agentes
-- **Model Gateway**: Interfaz con modelos de IA
+- **Shared**: Funciones compartidas y linaje global e incremental (no es una capa, son features compartidas entre capas)
+
+### 📝 Nota sobre AAL y Model Gateway
+
+**AAL (Agent Action Lock)** y **Model Gateway** son componentes del SDK, no del core semántico. El core semántico se enfoca en funciones puras y señales, mientras que estas capas requieren decisiones operativas y efectos secundarios que pertenecen a la implementación (SDK).
 
 ## 📦 Instalación
 
@@ -38,50 +41,67 @@ yarn add @ai-pip/core
 
 ## 🚀 Uso Básico
 
-### Importar capas completas
+### Importar desde el paquete principal
 
 ```typescript
 import { segment, sanitize, envelope } from '@ai-pip/core'
-```
-
-### Importar capas específicas
-
-```typescript
-// CSL - Context Segmentation Layer
-import { segment, classifySource } from '@ai-pip/core/csl'
-
-// ISL - Instruction Sanitization Layer
-import { sanitize, createPolicyRule } from '@ai-pip/core/isl'
-
-// CPE - Cryptographic Prompt Envelope
-import { envelope, createNonce } from '@ai-pip/core/cpe'
-
-// Shared utilities
-import { addLineageEntry } from '@ai-pip/core/shared'
+import type { CSLResult, ISLResult, CPEResult } from '@ai-pip/core'
 ```
 
 ### Ejemplo Completo
 
 ```typescript
-import { segment } from '@ai-pip/core/csl'
-import { sanitize } from '@ai-pip/core/isl'
-import { envelope } from '@ai-pip/core/cpe'
+import { segment, sanitize, envelope } from '@ai-pip/core'
+import type { CSLResult, ISLResult, CPEResult } from '@ai-pip/core'
 
 // 1. Segmentar contenido (CSL)
-const cslResult = segment({
+const cslResult: CSLResult = segment({
   content: 'User input here',
   source: 'UI',
   metadata: {}
 })
 
 // 2. Sanitizar contenido (ISL)
-const islResult = sanitize(cslResult)
+const islResult: ISLResult = sanitize(cslResult)
 
 // 3. Generar envelope criptográfico (CPE)
 const secretKey = 'your-secret-key'
-const cpeResult = envelope(islResult, secretKey)
+const cpeResult: CPEResult = envelope(islResult, secretKey)
 
 // cpeResult.envelope contiene el prompt protegido
+console.log(JSON.stringify(cpeResult, null, 2))
+```
+
+### Ejemplo con funciones adicionales
+
+```typescript
+import {
+  segment,
+  sanitize,
+  envelope,
+  classifySource,
+  addLineageEntry,
+  createNonce
+} from '@ai-pip/core'
+import type {
+  CSLResult,
+  ISLResult,
+  CPEResult,
+  Source,
+  TrustLevel
+} from '@ai-pip/core'
+
+// Clasificar un source
+const trust = classifySource('UI' as Source)
+
+// Agregar entrada de linaje
+const updatedLineage = addLineageEntry(cslResult.lineage, {
+  step: 'CUSTOM',
+  timestamp: Date.now()
+})
+
+// Generar nonce
+const nonce = createNonce()
 ```
 
 ## 📚 Documentación
@@ -92,11 +112,14 @@ const cpeResult = envelope(islResult, secretKey)
 - **[ISL - Instruction Sanitization Layer](docs/layer/isl.md)**: Documentación completa de la capa de sanitización
 - **[CPE - Cryptographic Prompt Envelope](docs/layer/cpe.md)**: Documentación completa del envoltorio criptográfico
 
+
+- **[Shared - Features Compartidas](docs/layer/shared.md)**: Funciones compartidas y linaje global
+
 ### Documentación General
 
+- **[Whitepaper](docs/whitepaper.md)**: Especificación técnica completa del protocolo AI-PIP
+- **[Roadmap](docs/roadmap.md)**: Plan de desarrollo y evolución del protocolo
 - **[Arquitectura](docs/architecture.md)**: Arquitectura semántica del protocolo
-- **[Roadmap](docs/roadmap.md)**: Plan de desarrollo y evolución
-- **[Whitepaper](docs/whitepaper.md)**: Especificación técnica completa
 - **[SDK Reference](docs/SDK.md)**: Referencia para desarrollo de SDKs
 
 ## 🧪 Testing
@@ -204,9 +227,47 @@ Las contribuciones son bienvenidas. Por favor:
 - **NPM Package**: https://www.npmjs.com/package/@ai-pip/core
 - **GitHub**: https://github.com/AI-PIP/ai-pip-core
 
+## 🔮 Mejoras Futuras
+
+### Imports por Capa Específica
+
+Actualmente, se recomienda importar desde el paquete principal (`@ai-pip/core`) para evitar confusiones con nombres similares entre capas. En futuras versiones, se mejorará el soporte para imports directos desde capas específicas:
+
+```typescript
+// Futuro (en desarrollo)
+import { segment } from '@ai-pip/core/csl'
+import { sanitize } from '@ai-pip/core/isl'
+import { envelope } from '@ai-pip/core/cpe'
+```
+
+Esto permitirá:
+- **Mejor organización**: Importar solo lo necesario de cada capa
+- **Evitar conflictos**: Prevenir confusiones con funciones de nombres similares
+- **Tree-shaking mejorado**: Los bundlers podrán eliminar código no usado más eficientemente
+
+**Nota**: Los exports por capa están técnicamente disponibles, pero se recomienda usar el paquete principal hasta que se complete la optimización de resolución de módulos.
+
 ---
 
 ## 📝 CHANGELOG
+
+### [0.1.5] - 2025-12-28
+
+#### 📚 Mejoras de Documentación
+- **README actualizado**: Agregados links a whitepaper, roadmap y documentación completa de capas
+- **Roadmap actualizado**: Agregado SDK-browser en Fase 4, actualizado estado de Fase 1 a 100% completado
+- **Clarificación de arquitectura**: Corregida documentación sobre Shared (no es una capa, son features compartidas)
+- **Nota sobre SDK**: Actualizada explicación sobre AAL y Model Gateway (son componentes del SDK, no del core)
+
+#### 🔧 Optimizaciones
+- **Reducción de tamaño del paquete**: Removido `src/` del campo `files` en `package.json` para hacer el paquete más liviano
+- **Paquete optimizado**: Solo se incluyen archivos necesarios (`dist/`, `tsconfig.json`, `README.md`, `LICENSE`)
+
+#### ✨ Mejoras
+- **Documentación de capas**: Agregado link a documentación de Shared (features compartidas)
+- **Organización de documentación**: Reorganizada sección de documentación con prioridad en whitepaper y roadmap
+
+---
 
 ### [0.1.3] - 2025-12-28
 
@@ -293,5 +354,5 @@ Las contribuciones son bienvenidas. Por favor:
 
 ---
 
-**Versión actual**: 0.1.3  
-**Estado**: Fase 1 - Capas Core (60% completado)
+**Versión actual**: 0.1.5  
+**Estado**: Fase 1 - Capas Core (100% completado)

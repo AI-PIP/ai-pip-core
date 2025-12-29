@@ -2,13 +2,17 @@
  * @ai-pip/core - Core implementation of the AI-PIP protocol
  * 
  * @remarks
- * Main entry point that re-exports all layers (CSL, ISL, Shared)
+ * Main entry point that re-exports all layers (CSL, ISL, CPE, Shared)
  * 
- * You can also import specific layers:
+ * You can import from specific layers:
  * - import { segment } from '@ai-pip/core/csl'
  * - import { sanitize } from '@ai-pip/core/isl'
- * - import { addLineageEntry } from '@ai-pip/core/shared'
  * - import { envelope } from '@ai-pip/core/cpe'
+ * 
+ * Or import everything from the main entry point:
+ * - import { addLineageEntry, segment, sanitize, envelope } from '@ai-pip/core'
+ * 
+ * Note: Shared functions are only available from the main entry point, not as a subpath.
  */
 
 // Re-export CSL
