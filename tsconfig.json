@@ -4,6 +4,7 @@
       "module": "ESNext",
       "moduleResolution": "bundler",
   
+      "rootDir": "src",
       "outDir": "dist",
       "baseUrl": ".",
       "paths": {
@@ -13,8 +14,9 @@
       "strict": true,
   
       "declaration": true,
-      "emitDeclarationOnly": true,
-      "declarationMap": false,
+      "declarationMap": true,
+      "sourceMap": true,
+      "emitDeclarationOnly": false,
   
       "types": ["node"],
   
@@ -23,5 +25,6 @@
   
       "skipLibCheck": true
     },
-    "include": ["src/**/*", "test/**/*"]
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "test"]
 }

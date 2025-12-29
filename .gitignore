@@ -423,3 +423,5 @@ test/
 coverage/
 
 test-package-install.js
+# Build output
+dist/

@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', '*.js', '*.cjs', '*.mjs', 'pnpm-lock.yaml', '*.log'],
+    ignores: ['dist/**', 'node_modules/**', '*.js', '*.cjs', '*.mjs', '*.d.ts', '*.d.ts.map', 'pnpm-lock.yaml', '*.log'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

@@ -139,24 +139,28 @@ pnpm dev
 - **Node.js**: >= 18.0.0
 - **pnpm**: >= 8.0.0 (recomendado) o npm/yarn
 
-### TypeScript
+### TypeScript ⚠️ **REQUERIDO**
 
-Este paquete utiliza ESM (`"type": "module"`) y exports con subpaths. Para que TypeScript resuelva correctamente los imports, tu proyecto **debe** tener la siguiente configuración en `tsconfig.json`:
+Este paquete utiliza ESM (`"type": "module"`) y exports con subpaths. Para que TypeScript resuelva correctamente los imports y tipos, tu proyecto **DEBE** tener la siguiente configuración en `tsconfig.json`:
+
+**Configuración mínima requerida:**
 
 ```json
 {
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "nodenext",
-    "target": "ES2022",
-    // ... otras opciones
+    "target": "ES2022"
   }
 }
 ```
 
-**⚠️ Importante**: Sin esta configuración, TypeScript no podrá resolver los subpaths como `@ai-pip/core/csl`, `@ai-pip/core/isl`, etc., y obtendrás errores como `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+**⚠️ CRÍTICO**: Sin esta configuración, obtendrás errores como:
+- `Module '"@ai-pip/core/csl"' has no exported member 'CSLResult'`
+- `ERR_PACKAGE_PATH_NOT_EXPORTED`
+- Los tipos no se resolverán correctamente
 
-#### Ejemplo de `tsconfig.json` completo
+#### Ejemplo de `tsconfig.json` completo recomendado
 
 ```json
 {
@@ -173,9 +177,11 @@ Este paquete utiliza ESM (`"type": "module"`) y exports con subpaths. Para que T
 }
 ```
 
-#### Si usas un runtime como `tsx` o `ts-node`
+#### Notas importantes
 
-Aunque uses `tsx` o `ts-node` para ejecutar TypeScript directamente, **aún necesitas** la configuración correcta en `tsconfig.json` para que TypeScript resuelva los tipos y los imports correctamente.
+- **Desde la versión 0.1.2+**: Esta configuración es obligatoria. Las versiones anteriores (0.1.0, 0.1.1) están deprecadas.
+- **Si usas `tsx` o `ts-node`**: Aunque ejecutes TypeScript directamente, **aún necesitas** esta configuración en `tsconfig.json` para que TypeScript resuelva los tipos correctamente.
+- **JavaScript puro**: Si usas JavaScript sin TypeScript, no necesitas esta configuración, pero perderás el soporte de tipos.
 
 ## 📄 Licencia
 
@@ -200,5 +206,92 @@ Las contribuciones son bienvenidas. Por favor:
 
 ---
 
-**Versión**: 0.1.0  
+## 📝 CHANGELOG
+
+### [0.1.3] - 2025-12-28
+
+#### ✨ Nuevas características
+- **Compilación a JavaScript**: El paquete ahora se compila a JavaScript (`dist/`) para mayor compatibilidad
+- **Archivos de declaración de tipos**: Se generan archivos `.d.ts` para soporte completo de TypeScript
+- **Source maps**: Incluidos para mejor debugging
+
+#### 🔧 Cambios técnicos
+- **Estructura de publicación**: Cambio de publicar archivos `.ts` directamente a compilar a `dist/`
+- **Exports mejorados**: Los exports ahora apuntan a archivos compilados (`.js` y `.d.ts`)
+- **Rutas relativas**: Reemplazo de path aliases (`@/`) por rutas relativas para compatibilidad
+- **Configuración de build**: Corregida la generación de archivos `.d.ts` en `dist/` en lugar de `src/`
+- **ESLint**: Configurado para ignorar archivos `.d.ts` generados
+
+#### 🐛 Correcciones
+- **Resolución de tipos**: Los tipos TypeScript ahora se resuelven correctamente desde `node_modules`
+- **Imports desde subpaths**: Corregidos los imports desde `@ai-pip/core/csl`, `@ai-pip/core/isl`, etc.
+- **Exports completos**: Agregado campo `default` a todos los exports para Node.js ESM
+- **Generación de archivos**: Archivos `.d.ts` ahora se generan correctamente en `dist/`
+
+#### 📚 Documentación
+- **Requisitos de TypeScript**: Documentación mejorada sobre configuración requerida
+- **Ejemplos actualizados**: Ejemplos de uso actualizados para la nueva estructura
+- **CHANGELOG completo**: Documentación de todas las versiones y deprecaciones
+
+#### 🛠️ Mejoras de desarrollo
+- **Script test:install**: Script para verificar instalación antes de publicar
+- **Script prepublishOnly**: Ejecuta automáticamente build, lint, tests y test:install antes de publicar
+
+#### ⚠️ Breaking Changes
+- **Configuración TypeScript requerida**: Ahora es **obligatorio** usar `module: "NodeNext"` y `moduleResolution: "nodenext"` en `tsconfig.json`
+
+---
+
+### [0.1.2] - 2025-12-28
+
+#### ⚠️ DEPRECADA
+
+**Motivo de deprecación**: Esta versión tenía problemas con la compilación y generación de archivos `.d.ts`. Los archivos se generaban en ubicaciones incorrectas (`src/` en lugar de `dist/`), causando errores de linting y problemas de resolución de tipos.
+
+**Problemas conocidos**:
+- Archivos `.d.ts` se generaban en `src/` en lugar de `dist/`
+- ESLint intentaba lintear archivos `.d.ts` generados, causando errores
+- Configuración de build incompleta (`declarationDir` mal configurado)
+- Los tipos no se resolvían correctamente en algunos casos
+
+**Recomendación**: Actualizar a `0.1.3` o superior.
+
+---
+
+### [0.1.1] - 2025-12-28
+
+#### ⚠️ DEPRECADA
+
+**Motivo de deprecación**: Esta versión tenía problemas con la resolución de path aliases (`@/`) que causaban errores al importar desde otros proyectos. Los tipos no se resolvían correctamente cuando el paquete se instalaba desde npm.
+
+**Problemas conocidos**:
+- Errores: `Module '"@ai-pip/core/csl"' has no exported member 'CSLResult'`
+- Path aliases no funcionaban en proyectos consumidores
+- Tipos no se resolvían correctamente desde `node_modules`
+
+**Recomendación**: Actualizar a `0.1.3` o superior.
+
+---
+
+### [0.1.0] - 2025-12-28
+
+#### ⚠️ DEPRECADA
+
+**Motivo de deprecación**: Versión inicial con problemas fundamentales de compatibilidad. Los exports no incluían el campo `default` requerido por Node.js ESM, causando errores `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+
+**Problemas conocidos**:
+- Errores: `ERR_PACKAGE_PATH_NOT_EXPORTED` al importar subpaths
+- Exports incompletos: Faltaba el campo `default` en los exports
+- Path aliases no funcionaban correctamente
+
+**Recomendación**: Actualizar a `0.1.3` o superior.
+
+#### 📦 Contenido inicial
+- **CSL (Context Segmentation Layer)**: Segmentación y clasificación de contenido
+- **ISL (Instruction Sanitization Layer)**: Sanitización de instrucciones
+- **CPE (Cryptographic Prompt Envelope)**: Envoltorio criptográfico con HMAC-SHA256
+
+---
+
+**Versión actual**: 0.1.3  
 **Estado**: Fase 1 - Capas Core (60% completado)
