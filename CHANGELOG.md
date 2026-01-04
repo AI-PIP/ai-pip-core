@@ -92,6 +92,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.7] - 2026-01-04
 
+### ⚠️ DEPRECATED
+
+**Deprecation reason**: This version has incorrect source classification that doesn't match the AI-PIP protocol specification. The trust level assignments for sources (UI, DOM, API, SYSTEM) are incorrect, which can lead to improper sanitization levels and security vulnerabilities.
+
+**Known issues**:
+- Incorrect source-to-trust-level mapping (UI classified as TC instead of STC, DOM as STC instead of UC, API as UC instead of STC)
+- Inconsistent behavior with AI-PIP protocol specification
+- Tests and documentation don't match actual implementation
+- Potential security risks due to incorrect sanitization levels
+
+**Recommendation**: Update to `0.1.8` or higher, which fixes all classification issues and aligns with the AI-PIP protocol specification.
+
 ### 🐛 Critical Fixes
 
 #### Type Resolution Fix
@@ -145,6 +157,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.6] - 2025-12-28
 
+### ⚠️ DEPRECATED
+
+**Deprecation reason**: This version has incorrect source classification that doesn't match the AI-PIP protocol specification. The trust level assignments for sources are incorrect, which can lead to improper sanitization levels and security vulnerabilities.
+
+**Known issues**:
+- Incorrect source-to-trust-level mapping
+- Inconsistent behavior with AI-PIP protocol specification
+- Potential security risks due to incorrect sanitization levels
+
+**Recommendation**: Update to `0.1.8` or higher, which fixes all classification issues and aligns with the AI-PIP protocol specification.
+
 ### 📚 Documentation Improvements
 - **Centralized documentation**: Moved all protocol documentation to `ai-pip-docs` repository
 - **Updated README**: Added comprehensive links to centralized documentation
@@ -157,6 +180,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [0.1.5] - 2025-12-28
+
+### ⚠️ DEPRECATED
+
+**Deprecation reason**: This version has incorrect source classification that doesn't match the AI-PIP protocol specification. The trust level assignments for sources are incorrect, which can lead to improper sanitization levels and security vulnerabilities.
+
+**Known issues**:
+- Incorrect source-to-trust-level mapping
+- Inconsistent behavior with AI-PIP protocol specification
+- Potential security risks due to incorrect sanitization levels
+
+**Recommendation**: Update to `0.1.8` or higher, which fixes all classification issues and aligns with the AI-PIP protocol specification.
 
 ### 📚 Documentation Improvements
 - **Updated README**: Added links to whitepaper, roadmap, and complete layer documentation
@@ -175,6 +209,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [0.1.3] - 2025-12-28
+
+### ⚠️ DEPRECATED
+
+**Deprecation reason**: This version has incorrect source classification that doesn't match the AI-PIP protocol specification. The trust level assignments for sources are incorrect, which can lead to improper sanitization levels and security vulnerabilities.
+
+**Known issues**:
+- Incorrect source-to-trust-level mapping
+- Inconsistent behavior with AI-PIP protocol specification
+- Potential security risks due to incorrect sanitization levels
+
+**Recommendation**: Update to `0.1.8` or higher, which fixes all classification issues and aligns with the AI-PIP protocol specification.
 
 ### ✨ New Features
 - **JavaScript compilation**: The package now compiles to JavaScript (`dist/`) for better compatibility
