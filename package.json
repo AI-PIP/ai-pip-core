@@ -1,6 +1,6 @@
 {
   "name": "@ai-pip/core",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, CPE, ALL, ModelGateway)",
   "type": "module",
   "main": "./dist/index.js",
@@ -35,6 +35,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -69,6 +70,7 @@
   },
   "homepage": "https://github.com/AI-PIP/ai-pip-core#readme",
   "license": "Apache-2.0",
+  "changelog": "https://github.com/AI-PIP/ai-pip-core/blob/main/CHANGELOG.md",
   "packageManager": "pnpm@10.24.0",
   "devDependencies": {
     "@eslint/js": "^9.39.2",

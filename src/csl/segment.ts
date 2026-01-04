@@ -1,8 +1,8 @@
-import type { CSLInput, CSLResult, CSLSegment } from './types'
-import { classifySource } from './classify'
-import { initLineage } from './lineage'
-import { generateId, splitByContextRules } from './utils'
-import { SegmentationError } from './exceptions'
+import type { CSLInput, CSLResult, CSLSegment } from './types.js'
+import { classifySource } from './classify.js'
+import { initLineage } from './lineage.js'
+import { generateId, splitByContextRules } from './utils.js'
+import { SegmentationError } from './exceptions/index.js'
 
 /**
  * Segmenta input en segmentos semánticos - función pura principal de CSL

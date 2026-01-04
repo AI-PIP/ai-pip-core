@@ -1,5 +1,5 @@
-import type { AnomalyAction, RiskScore } from '../types'
-import type { PiDetection } from './PiDetection'
+import type { AnomalyAction, RiskScore } from '../types.js'
+import type { PiDetection } from './PiDetection.js'
 
 /**
  * PiDetectionResult - tipo puro

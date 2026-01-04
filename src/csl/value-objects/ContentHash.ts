@@ -1,4 +1,4 @@
-import type { HashAlgorithm } from '../types'
+import type { HashAlgorithm } from '../types.js'
 
 /**
  * ContentHash - tipo puro

@@ -28,7 +28,7 @@ export {
   TrustLevelType,
   ClassificationError,
   SegmentationError
-} from './csl'
+} from './csl/index.js'
 export type {
   HashAlgorithm,
   Source,
@@ -39,10 +39,10 @@ export type {
   Origin,
   LineageEntry,
   ContentHash
-} from './csl'
+} from './csl/index.js'
 
 // Re-export ISL
-export { sanitize } from './isl'
+export { sanitize } from './isl/index.js'
 export type {
   RiskScore,
   AnomalyAction,
@@ -58,7 +58,7 @@ export type {
   PiDetectionResult,
   AnomalyScore,
   Pattern
-} from './isl'
+} from './isl/index.js'
 export {
   createPiDetection,
   getDetectionLength,
@@ -81,7 +81,7 @@ export {
   MAX_PATTERN_LENGTH,
   MAX_MATCHES,
   SanitizationError
-} from './isl'
+} from './isl/index.js'
 
 // Re-export Shared
 export {
@@ -89,10 +89,10 @@ export {
   addLineageEntries,
   filterLineageByStep,
   getLastLineageEntry
-} from './shared'
+} from './shared/index.js'
 
 // Re-export CPE
-export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isValidMetadata, CURRENT_PROTOCOL_VERSION, createSignature, EnvelopeError } from './cpe'
-export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './cpe'
+export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isValidMetadata, CURRENT_PROTOCOL_VERSION, createSignature, EnvelopeError } from './cpe/index.js'
+export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './cpe/index.js'
 
 

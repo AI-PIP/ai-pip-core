@@ -1,4 +1,4 @@
-import { OriginType } from '../types'
+import { OriginType } from '../types.js'
 
 /**
  * Origin - tipo puro

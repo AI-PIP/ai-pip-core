@@ -1,4 +1,4 @@
-import { TrustLevelType } from '../types'
+import { TrustLevelType } from '../types.js'
 
 /**
  * TrustLevel - tipo puro

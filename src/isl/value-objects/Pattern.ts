@@ -1,4 +1,4 @@
-import type { RiskScore } from '../types'
+import type { RiskScore } from '../types.js'
 
 /**
  * Pattern - tipo puro

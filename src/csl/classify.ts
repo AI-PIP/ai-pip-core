@@ -1,9 +1,9 @@
-import { createTrustLevel } from './value-objects/TrustLevel'
-import type { Origin } from './value-objects/Origin'
-import { originMap } from './value-objects/Origin-map'
-import { ClassificationError } from './exceptions'
-import { OriginType } from './types'
-import type { Source } from './types'
+import { createTrustLevel } from './value-objects/TrustLevel.js'
+import type { Origin } from './value-objects/Origin.js'
+import { originMap } from './value-objects/Origin-map.js'
+import { ClassificationError } from './exceptions/index.js'
+import { OriginType } from './types.js'
+import type { Source } from './types.js'
 
 /**
  * Clasifica un source y retorna su TrustLevel - función pura determinista

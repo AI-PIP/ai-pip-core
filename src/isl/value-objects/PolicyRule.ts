@@ -1,4 +1,4 @@
-import type { BlockedIntent, ImmutableInstruction, ProtectedRole, SensitiveScope } from '../types'
+import type { BlockedIntent, ImmutableInstruction, ProtectedRole, SensitiveScope } from '../types.js'
 
 /**
  * RoleProtectionConfig - configuración de protección de roles

@@ -3,8 +3,8 @@
  * Value Object puro e inmutable
  */
 
-import type { CPEMetadata, ProtocolVersion, Timestamp } from '../types'
-import type { Nonce as NonceVO } from './Nonce'
+import type { CPEMetadata, ProtocolVersion, Timestamp } from '../types.js'
+import type { Nonce as NonceVO } from './Nonce.js'
 
 /**
  * Versión actual del protocolo

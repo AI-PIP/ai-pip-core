@@ -1,2 +1,2 @@
-export { SanitizationError } from './SanitizationError'
+export { SanitizationError } from './SanitizationError.js'
 

@@ -261,108 +261,18 @@ This will enable:
 
 ## 📝 CHANGELOG
 
-### [0.1.5] - 2025-12-28
+### [0.1.7] - 2026-01-01
 
-#### 📚 Documentation Improvements
-- **Updated README**: Added links to whitepaper, roadmap, and complete layer documentation
-- **Updated Roadmap**: Added SDK-browser in Phase 4, updated Phase 1 status to 100% completed
-- **Architecture clarification**: Corrected documentation about Shared (not a layer, but shared features)
-- **SDK note**: Updated explanation about AAL and Model Gateway (they are SDK components, not core)
+#### 🐛 Critical Fixes
+- **Fixed nested type resolution**: Changed `moduleResolution` from `"bundler"` to `"nodenext"` to fix type accessibility issues
+- **Added explicit file extensions**: All relative imports now include `.js` extension (required by `nodenext`)
+- **Removed `tsconfig.json` from package**: Only needed for development, not for published packages
 
-#### 🔧 Optimizations
-- **Package size reduction**: Removed `src/` from `files` field in `package.json` to make the package lighter
-- **Optimized package**: Only necessary files are included (`dist/`, `tsconfig.json`, `README.md`, `LICENSE`)
+**What this fixes**: TypeScript now correctly recognizes and resolves all type properties in consuming projects. Previously, nested type properties were not recognized, appearing as `any` instead of their correct types, and autocompletado didn't work for type properties. This fix ensures proper type inference, autocompletado, and type checking for all exported types and their nested properties.
 
-#### ✨ Improvements
-- **Layer documentation**: Added link to Shared documentation (shared features)
-- **Documentation organization**: Reorganized documentation section with priority on whitepaper and roadmap
+For complete details and all version history, see [CHANGELOG.md](./CHANGELOG.md).
 
 ---
 
-### [0.1.3] - 2025-12-28
-
-#### ✨ New Features
-- **JavaScript compilation**: The package now compiles to JavaScript (`dist/`) for better compatibility
-- **Type declaration files**: `.d.ts` files are generated for full TypeScript support
-- **Source maps**: Included for better debugging
-
-#### 🔧 Technical Changes
-- **Publication structure**: Changed from publishing `.ts` files directly to compiling to `dist/`
-- **Improved exports**: Exports now point to compiled files (`.js` and `.d.ts`)
-- **Relative paths**: Replaced path aliases (`@/`) with relative paths for compatibility
-- **Build configuration**: Fixed generation of `.d.ts` files in `dist/` instead of `src/`
-- **ESLint**: Configured to ignore generated `.d.ts` files
-
-#### 🐛 Fixes
-- **Type resolution**: TypeScript types now resolve correctly from `node_modules`
-- **Imports from subpaths**: Fixed imports from `@ai-pip/core/csl`, `@ai-pip/core/isl`, etc.
-- **Complete exports**: Added `default` field to all exports for Node.js ESM
-- **File generation**: `.d.ts` files now generate correctly in `dist/`
-
-#### 📚 Documentation
-- **TypeScript requirements**: Improved documentation about required configuration
-- **Updated examples**: Usage examples updated for new structure
-- **Complete CHANGELOG**: Documentation of all versions and deprecations
-
-#### 🛠️ Development Improvements
-- **test:install script**: Script to verify installation before publishing
-- **prepublishOnly script**: Automatically runs build, lint, tests, and test:install before publishing
-
-#### ⚠️ Breaking Changes
-- **TypeScript configuration required**: It's now **mandatory** to use `module: "NodeNext"` and `moduleResolution: "nodenext"` in `tsconfig.json`
-
----
-
-### [0.1.2] - 2025-12-28
-
-#### ⚠️ DEPRECATED
-
-**Deprecation reason**: This version had issues with compilation and `.d.ts` file generation. Files were generated in incorrect locations (`src/` instead of `dist/`), causing linting errors and type resolution problems.
-
-**Known issues**:
-- `.d.ts` files were generated in `src/` instead of `dist/`
-- ESLint tried to lint generated `.d.ts` files, causing errors
-- Incomplete build configuration (`declarationDir` misconfigured)
-- Types did not resolve correctly in some cases
-
-**Recommendation**: Update to `0.1.3` or higher.
-
----
-
-### [0.1.1] - 2025-12-28
-
-#### ⚠️ DEPRECATED
-
-**Deprecation reason**: This version had issues with path alias resolution (`@/`) that caused errors when importing from other projects. Types did not resolve correctly when the package was installed from npm.
-
-**Known issues**:
-- Errors: `Module '"@ai-pip/core/csl"' has no exported member 'CSLResult'`
-- Path aliases did not work in consumer projects
-- Types did not resolve correctly from `node_modules`
-
-**Recommendation**: Update to `0.1.3` or higher.
-
----
-
-### [0.1.0] - 2025-12-28
-
-#### ⚠️ DEPRECATED
-
-**Deprecation reason**: Initial version with fundamental compatibility issues. Exports did not include the `default` field required by Node.js ESM, causing `ERR_PACKAGE_PATH_NOT_EXPORTED` errors.
-
-**Known issues**:
-- Errors: `ERR_PACKAGE_PATH_NOT_EXPORTED` when importing subpaths
-- Incomplete exports: Missing `default` field in exports
-- Path aliases did not work correctly
-
-**Recommendation**: Update to `0.1.3` or higher.
-
-#### 📦 Initial Content
-- **CSL (Context Segmentation Layer)**: Content segmentation and classification
-- **ISL (Instruction Sanitization Layer)**: Instruction sanitization
-- **CPE (Cryptographic Prompt Envelope)**: Cryptographic envelope with HMAC-SHA256
-
----
-
-**Current Version**: 0.1.5  
+**Current Version**: 0.1.7  
 **Status**: Phase 1 - Core Layers (100% completed)

@@ -1,4 +1,4 @@
-import { OriginType, TrustLevelType } from '../types'
+import { OriginType, TrustLevelType } from '../types.js'
 
 /**
  * originMap is the deterministic mapping from OriginType to TrustLevelType.

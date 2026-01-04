@@ -1,6 +1,6 @@
-import { createLineageEntry as createEntry } from './value-objects/LineageEntry'
-import type { LineageEntry } from './value-objects/LineageEntry'
-import type { CSLSegment } from './types'
+import { createLineageEntry as createEntry } from './value-objects/LineageEntry.js'
+import type { LineageEntry } from './value-objects/LineageEntry.js'
+import type { CSLSegment } from './types.js'
 
 /**
  * Inicializa el linaje para un segmento - función pura

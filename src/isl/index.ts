@@ -7,10 +7,10 @@
  */
 
 // Funciones puras principales
-export { sanitize } from './sanitize'
+export { sanitize } from './sanitize.js'
 
 // Value objects
-export type { PiDetection, PiDetectionResult, AnomalyScore, Pattern } from './value-objects'
+export type { PiDetection, PiDetectionResult, AnomalyScore, Pattern } from './value-objects/index.js'
 export {
   createPiDetection,
   getDetectionLength,
@@ -32,10 +32,10 @@ export {
   MAX_CONTENT_LENGTH,
   MAX_PATTERN_LENGTH,
   MAX_MATCHES
-} from './value-objects'
+} from './value-objects/index.js'
 
 // Exceptions
-export { SanitizationError } from './exceptions/SanitizationError'
+export { SanitizationError } from './exceptions/SanitizationError.js'
 
 // Types
 export type {
@@ -49,5 +49,5 @@ export type {
   RemovedInstruction,
   ISLSegment,
   ISLResult
-} from './types'
+} from './types.js'
 

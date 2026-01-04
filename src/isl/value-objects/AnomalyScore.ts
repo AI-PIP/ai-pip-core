@@ -1,4 +1,4 @@
-import type { AnomalyAction, RiskScore } from '../types'
+import type { AnomalyAction, RiskScore } from '../types.js'
 
 /**
  * AnomalyScore - tipo puro

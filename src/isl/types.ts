@@ -3,9 +3,9 @@
  */
 
 // Importar tipos de CSL y value objects
-import type { LineageEntry, TrustLevel } from '../csl/value-objects'
-import type { PiDetectionResult } from './value-objects/PiDetectionResult'
-import type { AnomalyScore } from './value-objects/AnomalyScore'
+import type { LineageEntry, TrustLevel } from '../csl/value-objects/index.js'
+import type { PiDetectionResult } from './value-objects/PiDetectionResult.js'
+import type { AnomalyScore } from './value-objects/AnomalyScore.js'
 
 /**
  * RiskScore - Score de riesgo (0-1)

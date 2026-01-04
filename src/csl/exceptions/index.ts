@@ -1,3 +1,3 @@
-export { ClassificationError } from './ClassificationError'
-export { SegmentationError } from './SegmentationError'
+export { ClassificationError } from './ClassificationError.js'
+export { SegmentationError } from './SegmentationError.js'
 

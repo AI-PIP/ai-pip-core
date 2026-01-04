@@ -1,4 +1,4 @@
-import type { Position, RiskScore } from '../types'
+import type { Position, RiskScore } from '../types.js'
 
 /**
  * PiDetection - tipo puro

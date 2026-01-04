@@ -4,7 +4,7 @@
  */
 
 import { createHmac } from 'node:crypto'
-import type { SignatureAlgorithm } from '../types'
+import type { SignatureAlgorithm } from '../types.js'
 
 /**
  * Signature - Firma criptográfica

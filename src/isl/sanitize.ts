@@ -1,9 +1,9 @@
-import type { CSLResult } from '../csl/types'
-import type { ISLResult, ISLSegment, RemovedInstruction } from './types'
-import { createLineageEntry } from '../csl/value-objects'
-import { addLineageEntry } from '../shared/lineage'
-import type { TrustLevel } from '../csl/value-objects'
-import { TrustLevelType } from '../csl/types'
+import type { CSLResult } from '../csl/types.js'
+import type { ISLResult, ISLSegment, RemovedInstruction } from './types.js'
+import { createLineageEntry } from '../csl/value-objects/index.js'
+import { addLineageEntry } from '../shared/lineage.js'
+import type { TrustLevel } from '../csl/value-objects/index.js'
+import { TrustLevelType } from '../csl/types.js'
 
 /**
  * Sanitiza contenido según nivel de confianza - función pura

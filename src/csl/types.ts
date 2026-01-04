@@ -87,7 +87,7 @@ export interface CSLInput {
 }
 
 // Importar tipos de value objects para usar en interfaces
-import type { ContentHash, LineageEntry, TrustLevel } from './value-objects'
+import type { ContentHash, LineageEntry, TrustLevel } from './value-objects/index.js'
 
 /**
  * CSLSegment - Segmento puro, solo datos semánticos
