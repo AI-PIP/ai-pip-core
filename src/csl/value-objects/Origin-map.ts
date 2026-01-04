@@ -16,17 +16,17 @@ export const originMap = new Map<OriginType, TrustLevelType>([
   // User origins - always untrusted (security by default)
   [OriginType.USER, TrustLevelType.UC],
   
-  // DOM origins - trust based on visibility
-  [OriginType.DOM_VISIBLE, TrustLevelType.STC],
-  [OriginType.DOM_HIDDEN, TrustLevelType.UC],
-  [OriginType.DOM_ATTRIBUTE, TrustLevelType.STC],
+  // DOM origins - trust based on visibility and source
+  [OriginType.DOM_VISIBLE, TrustLevelType.STC],      // Used for UI source
+  [OriginType.DOM_HIDDEN, TrustLevelType.UC],        // Used for DOM/WEB/SCRAPED source
+  [OriginType.DOM_ATTRIBUTE, TrustLevelType.STC],    // Used for API source
   
   // External origins - always untrusted
   [OriginType.SCRIPT_INJECTED, TrustLevelType.UC],
   [OriginType.NETWORK_FETCHED, TrustLevelType.UC],
   
   // System origins - trusted (system controls)
-  [OriginType.SYSTEM_GENERATED, TrustLevelType.TC],
+  [OriginType.SYSTEM_GENERATED, TrustLevelType.TC],  // Used for SYSTEM source
   
   // Unknown - untrusted by default (fail-secure)
   [OriginType.UNKNOWN, TrustLevelType.UC],

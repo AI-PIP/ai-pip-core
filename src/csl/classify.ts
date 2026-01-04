@@ -21,19 +21,19 @@ import type { Source } from './types.js'
  * @example
  * ```typescript
  * const trust = classifySource('UI')
- * // Returns: { value: 'TC' }
+ * // Returns: { value: 'STC' }
  * 
  * const trust2 = classifySource('DOM')
- * // Returns: { value: 'STC' }
+ * // Returns: { value: 'UC' }
  * ```
  */
 export function classifySource(source: Source) {
   // Mapeo simple: Source → OriginType → TrustLevel
   const sourceToOriginType: Record<Source, OriginType> = {
-    'UI': OriginType.SYSTEM_GENERATED,      // UI directa → TC
     'SYSTEM': OriginType.SYSTEM_GENERATED,   // System → TC
-    'DOM': OriginType.DOM_VISIBLE,           // DOM → STC
-    'API': OriginType.NETWORK_FETCHED        // API → UC
+    'UI': OriginType.DOM_VISIBLE,             // UI → STC
+    'API': OriginType.DOM_ATTRIBUTE,          // API → STC
+    'DOM': OriginType.DOM_HIDDEN              // DOM/WEB/SCRAPED → UC
   }
   
   const originType = sourceToOriginType[source]

@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.8] - 2026-01-04
+
+### 🐛 Critical Fixes - Origin Classification
+
+- **Fixed source classification mapping**: Corrected the deterministic trust level classification for all content sources to align with AI-PIP protocol specification
+- **Updated trust level assignments**:
+  - `SYSTEM` → `TC` (Trusted Content) - System-generated content, fully trusted
+  - `UI` → `STC` (Semi-Trusted Content) - User interface content, moderate trust
+  - `API` → `STC` (Semi-Trusted Content) - External API content, moderate trust
+  - `DOM` → `UC` (Untrusted Content) - DOM/WEB/SCRAPED content, untrusted by default
+- **Corrected sanitization levels**: Updated sanitization logic to match the corrected trust levels (TC → minimal, STC → moderate, UC → aggressive)
+- **Fixed test suite**: Updated all tests to reflect the correct classification, ensuring consistency across the codebase
+
+#### What This Fixes
+
+**Problem**: During documentation review, inconsistencies were discovered between:
+- The actual source classification implementation
+- The AI-PIP protocol specification
+- Test expectations and assertions
+- Documentation examples
+
+**Solution**: 
+- Aligned source-to-trust-level mapping with AI-PIP protocol specification
+- Updated `classifySource()` function to use correct deterministic mappings
+- Corrected all test cases to match the proper classification
+- Updated documentation examples to reflect accurate trust levels
+
+**Impact**: 
+- ✅ Deterministic trust level classification now matches AI-PIP specification
+- ✅ Consistent behavior across all layers (CSL, ISL, CPE)
+- ✅ All tests pass with correct expectations
+- ✅ Documentation accurately reflects actual behavior
+- ✅ Proper sanitization levels applied based on correct trust classification
+
+### 📚 Documentation Improvements
+
+- **Enhanced usage examples**: Added detailed explanations below each code example describing what each script does and how it works in real-world scenarios
+- **Layer-specific imports documentation**: Updated examples to show practical usage of layer-specific imports with step-by-step explanations
+- **Official SDK announcement**: Added section explaining that `@ai-pip/core` will be used as the foundation for the official AI-PIP SDK
+- **Improved example clarity**: Each example now includes context about when and why to use specific functions, making it easier for users to understand the complete processing pipeline
+- **Updated source classification examples**: All examples now correctly show the trust levels and sanitization levels for each source type
+
+#### What This Improves
+
+**Problem**: Users visiting the package on npmjs could see code examples but lacked context about:
+- What each example actually does in practice
+- How the processing pipeline works end-to-end
+- When to use specific functions or import strategies
+- The relationship between the core package and the official SDK
+- Correct trust level classification for different sources
+
+**Solution**: 
+- Added detailed explanations below each code example
+- Explained the purpose and workflow of each processing step
+- Documented the relationship between core and SDK
+- Added professional context about real-world usage
+- Corrected all source classification examples
+
+**Impact**: 
+- ✅ Users can now understand examples without prior knowledge
+- ✅ Better onboarding experience for new users
+- ✅ Clearer documentation for npmjs visitors
+- ✅ Professional presentation of the package capabilities
+- ✅ Accurate trust level information in all examples
+
+### 📦 Package Changes
+
+- **Source classification fixes**: Updated `src/csl/classify.ts` with correct source-to-trust-level mappings
+- **Test suite updates**: Fixed all test files to match correct classification:
+  - `test/core/csl/classify.test.ts`
+  - `test/core/csl/segment.test.ts`
+  - `test/core/isl/sanitize.test.ts`
+  - `test/core/cpe/envelope.test.ts`
+  - `test/core/integration.test.ts`
+- **README.md updated**: Enhanced with practical examples, explanations, and correct source classification
+- **Professional presentation**: Improved clarity and context for all usage examples
+
+### ⚠️ Breaking Changes
+
+**None** - This is a patch version that fixes classification inconsistencies and improves documentation. The API remains unchanged, but the trust level classification behavior is now correct and consistent with the AI-PIP protocol specification.
+
+---
+
 ## [0.1.7] - 2026-01-04
 
 ### 🐛 Critical Fixes
@@ -176,6 +259,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Current Version**: 0.1.7  
+**Current Version**: 0.1.8  
 **Status**: Phase 1 - Core Layers (100% completed)
 
