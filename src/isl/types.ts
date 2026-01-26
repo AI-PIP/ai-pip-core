@@ -5,55 +5,34 @@
 // Importar tipos de CSL y value objects
 import type { LineageEntry, TrustLevel } from '../csl/value-objects/index.js'
 import type { PiDetectionResult } from './value-objects/PiDetectionResult.js'
-import type { AnomalyScore } from './value-objects/AnomalyScore.js'
+
 
 /**
- * RiskScore - Score de riesgo (0-1)
+ * RiskScore
+ *
+ * Represents a normalized risk value produced by the core semantic layers.
+ *
+ * @remarks
+ * - Value range is **0.0 to 1.0**
+ * - `0`   = no risk detected
+ * - `1`   = maximum risk confidence
+ *
+ * Although this type aliases `number`, it is intentionally defined
+ * to preserve **semantic meaning**, enforce conceptual clarity,
+ * and stabilize public contracts across layers and SDKs.
+ *
+ * This type MUST NOT be interpreted as a decision signal.
+ * Decisions based on RiskScore belong to higher layers (AAL / SDK).
  */
 export type RiskScore = number
 
-/**
- * AnomalyAction - Acción recomendada basada en análisis
- */
-export type AnomalyAction = 'ALLOW' | 'WARN' | 'BLOCK'
 
-/**
- * Position - Posición de un patrón detectado en el contenido
- */
-export type Position = {
-  readonly start: number
-  readonly end: number
-}
 
-/**
- * BlockedIntent - Intent que está explícitamente bloqueado por política
- */
-export type BlockedIntent = string
 
-/**
- * SensitiveScope - Tema sensible que requiere validación adicional
- */
-export type SensitiveScope = string
 
-/**
- * ProtectedRole - Rol que no puede ser sobrescrito
- */
-export type ProtectedRole = string
 
-/**
- * ImmutableInstruction - Instrucción que no puede ser modificada
- */
-export type ImmutableInstruction = string
 
-/**
- * RemovedInstruction - Instrucción removida durante sanitización
- */
-export interface RemovedInstruction {
-  readonly type: 'system_command' | 'role_swapping' | 'jailbreak' | 'override' | 'manipulation'
-  readonly pattern: string
-  readonly position: Position
-  readonly description: string
-}
+
 
 /**
  * ISLSegment - Segmento sanitizado por ISL
@@ -65,8 +44,6 @@ export interface ISLSegment {
   readonly trust: TrustLevel               // Trust level del segmento original
   readonly lineage: LineageEntry[]         // Linaje actualizado con ISL
   readonly piDetection?: PiDetectionResult  // Detección de prompt injection
-  readonly anomalyScore?: AnomalyScore     // Score de anomalía
-  readonly instructionsRemoved: RemovedInstruction[]  // Instrucciones removidas
   readonly sanitizationLevel: 'minimal' | 'moderate' | 'aggressive'
 }
 
@@ -79,8 +56,6 @@ export interface ISLResult {
   readonly metadata: {
     readonly totalSegments: number
     readonly sanitizedSegments: number
-    readonly blockedSegments: number
-    readonly instructionsRemoved: number
     readonly processingTimeMs?: number
   }
 }

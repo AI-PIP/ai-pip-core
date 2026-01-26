@@ -14,5 +14,10 @@ export {
   getLastLineageEntry
 } from './lineage.js'
 
-// Funciones de auditoría NO son core - van al SDK/tooling
-// El core solo preserva linaje, no lo analiza
+
+export type {
+  Position,
+  SegmentRef  
+}from './types.js' 
+
+

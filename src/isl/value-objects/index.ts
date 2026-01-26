@@ -1,7 +1,6 @@
 // Tipos
 export type { PiDetection } from './PiDetection.js'
 export type { PiDetectionResult } from './PiDetectionResult.js'
-export type { AnomalyScore } from './AnomalyScore.js'
 export type { Pattern } from './Pattern.js'
 // Funciones de creación
 export {
@@ -20,12 +19,7 @@ export {
   getHighestConfidenceDetection
 } from './PiDetectionResult.js'
 
-export {
-  createAnomalyScore,
-  isHighRisk,
-  isWarnRisk,
-  isLowRisk
-} from './AnomalyScore.js'
+
 
 export {
   createPattern,
@@ -36,6 +30,5 @@ export {
   MAX_MATCHES
 } from './Pattern.js'
 
-// PolicyRule NO es core - va a ModelGateway/Policy Engine
-// Se mantiene el tipo para compatibilidad pero las funciones de decisión no son core
+
 

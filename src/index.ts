@@ -2,7 +2,7 @@
  * @ai-pip/core - Core implementation of the AI-PIP protocol
  * 
  * @remarks
- * Main entry point that re-exports all layers (CSL, ISL, CPE, Shared)
+ * Main entry point that re-exports all layers (CSL, ISL, CPE,AAL ,Shared)
  * 
  * You can import from specific layers:
  * - import { segment } from '@ai-pip/core/csl'
@@ -45,18 +45,10 @@ export type {
 export { sanitize } from './isl/index.js'
 export type {
   RiskScore,
-  AnomalyAction,
-  Position,
-  BlockedIntent,
-  SensitiveScope,
-  ProtectedRole,
-  ImmutableInstruction,
-  RemovedInstruction,
   ISLSegment,
   ISLResult,
   PiDetection,
   PiDetectionResult,
-  AnomalyScore,
   Pattern
 } from './isl/index.js'
 export {
@@ -70,10 +62,6 @@ export {
   getDetectionCount,
   getDetectionsByType,
   getHighestConfidenceDetection,
-  createAnomalyScore,
-  isHighRisk,
-  isWarnRisk,
-  isLowRisk,
   createPattern,
   matchesPattern,
   findMatch,
@@ -95,4 +83,28 @@ export {
 export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isValidMetadata, CURRENT_PROTOCOL_VERSION, createSignature, EnvelopeError } from './cpe/index.js'
 export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './cpe/index.js'
 
+
+// AAL
+export {
+    createAnomalyScore,
+    AnomalyScore,
+    isHighRisk,
+    isLowRisk,
+    isWarnRisk,
+    isRoleProtected,
+    isContextLeakPreventionEnabled,
+    isInstructionImmutable,
+    isIntentBlocked,
+    isScopeSensitive,
+} from './AAL/index.js'
+
+
+export type {
+    AnomalyAction,
+    RemovedInstruction,
+    BlockedIntent,
+    SensitiveScope,
+    ProtectedRole,
+    ImmutableInstruction
+} from './AAL/index.js'
 

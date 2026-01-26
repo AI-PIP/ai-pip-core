@@ -1,5 +1,5 @@
-import type { Position, RiskScore } from '../types.js'
-
+import type {  RiskScore } from '../types.js'
+import type { Position } from '../../shared/types.js'
 /**
  * PiDetection - tipo puro
  */

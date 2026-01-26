@@ -1,4 +1,4 @@
-import type { AnomalyAction, RiskScore } from '../types.js'
+import type { RiskScore } from '../types.js'
 import type { PiDetection } from './PiDetection.js'
 
 /**
@@ -7,7 +7,6 @@ import type { PiDetection } from './PiDetection.js'
 export type PiDetectionResult = {
   readonly detections: readonly PiDetection[]
   readonly score: RiskScore
-  readonly action: AnomalyAction
   readonly patterns: readonly string[]
   readonly detected: boolean
 }
@@ -36,25 +35,12 @@ function calculateAggregatedScore(detections: readonly PiDetection[]): RiskScore
   return Math.max(0, Math.min(1, aggregatedScore))
 }
 
-/**
- * Determina acción basada en score - función pura
- */
-function determineActionFromScore(score: RiskScore): AnomalyAction {
-  if (score >= 0.7) {
-    return 'BLOCK'
-  } else if (score >= 0.3) {
-    return 'WARN'
-  } else {
-    return 'ALLOW'
-  }
-}
 
 /**
  * Crea un PiDetectionResult - función pura
  */
 export function createPiDetectionResult(
   detections: readonly PiDetection[],
-  action?: AnomalyAction
 ): PiDetectionResult {
   // Validar detections array
   if (!Array.isArray(detections)) {
@@ -64,21 +50,7 @@ export function createPiDetectionResult(
   // Calcular score agregado
   const score = calculateAggregatedScore(detections)
 
-  // Determinar acción (o usar la proporcionada)
-  const finalAction = action ?? determineActionFromScore(score)
 
-  // Validar acción
-  if (!['ALLOW', 'WARN', 'BLOCK'].includes(finalAction)) {
-    throw new Error(`Invalid AnomalyAction: ${finalAction}. Must be one of: ALLOW, WARN, BLOCK`)
-  }
-
-  // Validar que la acción coincide con el score calculado
-  const expectedAction = determineActionFromScore(score)
-  if (finalAction !== expectedAction) {
-    throw new Error(
-      `PiDetectionResult action mismatch. Calculated score ${score} requires action '${expectedAction}', but '${finalAction}' was provided`
-    )
-  }
 
   // Derivar patterns array
   const patterns: readonly string[] = detections.map((detection: PiDetection) => detection.pattern_type)
@@ -86,7 +58,6 @@ export function createPiDetectionResult(
   const result: PiDetectionResult = {
     detections: Object.freeze(Array.from(detections)) as readonly PiDetection[],
     score,
-    action: finalAction,
     patterns: Object.freeze(Array.from(patterns)),
     detected: detections.length > 0
   }

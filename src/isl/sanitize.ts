@@ -1,5 +1,5 @@
 import type { CSLResult } from '../csl/types.js'
-import type { ISLResult, ISLSegment, RemovedInstruction } from './types.js'
+import type { ISLResult, ISLSegment } from './types.js'
 import { createLineageEntry } from '../csl/value-objects/index.js'
 import { addLineageEntry } from '../shared/lineage.js'
 import type { TrustLevel } from '../csl/value-objects/index.js'
@@ -17,8 +17,7 @@ import { TrustLevelType } from '../csl/types.js'
 export function sanitize(cslResult: CSLResult): ISLResult {
   const segments: ISLSegment[] = []
   let allLineage: typeof cslResult.lineage = [...cslResult.lineage]
-  const blockedCount = 0
-  let instructionsRemovedCount = 0
+  
 
   for (const cslSegment of cslResult.segments) {
     // Determinar nivel de sanitización según trust level
@@ -30,8 +29,6 @@ export function sanitize(cslResult: CSLResult): ISLResult {
       sanitizationLevel
     )
 
-    // Detectar instrucciones removidas (esto se implementará con detección de PI)
-    const removedInstructions: RemovedInstruction[] = []
 
     // Crear segmento sanitizado
     const islSegment: ISLSegment = {
@@ -43,7 +40,6 @@ export function sanitize(cslResult: CSLResult): ISLResult {
         cslSegment.lineage,
         createLineageEntry('ISL', Date.now())
       ),
-      instructionsRemoved: removedInstructions,
       sanitizationLevel
     }
 
@@ -52,7 +48,6 @@ export function sanitize(cslResult: CSLResult): ISLResult {
     if (lastLineageEntry) {
       allLineage = addLineageEntry(allLineage, lastLineageEntry)
     }
-    instructionsRemovedCount += removedInstructions.length
   }
 
   return {
@@ -61,8 +56,6 @@ export function sanitize(cslResult: CSLResult): ISLResult {
     metadata: {
       totalSegments: segments.length,
       sanitizedSegments: segments.length,
-      blockedSegments: blockedCount,
-      instructionsRemoved: instructionsRemovedCount
     }
   }
 }
@@ -82,12 +75,11 @@ function getSanitizationLevel(trust: TrustLevel): 'minimal' | 'moderate' | 'aggr
 function sanitizeContent(
   content: string,
   _level: 'minimal' | 'moderate' | 'aggressive'
-): { content: string; removed: RemovedInstruction[] } {
+): { content: string; } {
   // Por ahora retorna el contenido sin cambios
   // La lógica de sanitización real se implementará después
   return {
     content,
-    removed: []
   }
 }
 

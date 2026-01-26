@@ -10,7 +10,7 @@
 export { sanitize } from './sanitize.js'
 
 // Value objects
-export type { PiDetection, PiDetectionResult, AnomalyScore, Pattern } from './value-objects/index.js'
+export type { PiDetection, PiDetectionResult, Pattern } from './value-objects/index.js'
 export {
   createPiDetection,
   getDetectionLength,
@@ -22,10 +22,6 @@ export {
   getDetectionCount,
   getDetectionsByType,
   getHighestConfidenceDetection,
-  createAnomalyScore,
-  isHighRisk,
-  isWarnRisk,
-  isLowRisk,
   createPattern,
   matchesPattern,
   findMatch,
@@ -40,13 +36,6 @@ export { SanitizationError } from './exceptions/SanitizationError.js'
 // Types
 export type {
   RiskScore,
-  AnomalyAction,
-  Position,
-  BlockedIntent,
-  SensitiveScope,
-  ProtectedRole,
-  ImmutableInstruction,
-  RemovedInstruction,
   ISLSegment,
   ISLResult
 } from './types.js'
