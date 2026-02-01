@@ -4,6 +4,8 @@ import { TrustLevelType } from '../csl/types.js'
 import type { ISLResult, ISLSegment } from './types.js'
 import { buildISLLineage } from './lineage/buildISLLineage.js'
 import { buildISLResult } from './process/buildISLResult.js'
+import { detectThreats } from './detect/index.js'
+import { createPiDetectionResult } from './value-objects/PiDetectionResult.js'
 
 /**
  * Sanitizes content according to trust level - pure function
@@ -29,17 +31,23 @@ export function sanitize(cslResult: CSLResult): ISLResult {
       sanitizationLevel
     )
 
+    // Detect threats (deterministic, bounded)
+    const detections = detectThreats(cslSegment.content)
+    const piDetection =
+      detections.length > 0 ? createPiDetectionResult(detections) : undefined
+
     // Build ISL lineage for this segment
     const segmentLineage = buildISLLineage(cslSegment.lineage, startTime)
 
-    // Create sanitized segment
+    // Create sanitized segment with detections when present
     const islSegment: ISLSegment = {
       id: cslSegment.id,
-      originalContent: cslSegment.content,  // ✅ Preserve original
+      originalContent: cslSegment.content,
       sanitizedContent: sanitized.content,
       trust: cslSegment.trust,
-      lineage: [...segmentLineage], // Convert readonly to mutable for segment
-      sanitizationLevel
+      lineage: [...segmentLineage],
+      sanitizationLevel,
+      ...(piDetection !== undefined && { piDetection })
     }
 
     segments.push(islSegment)

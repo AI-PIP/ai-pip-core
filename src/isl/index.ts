@@ -17,6 +17,10 @@ export { sanitize } from './sanitize.js'
 // Process functions
 export { buildISLResult, emitSignal } from './process/index.js'
 
+// Detect - threat detection (pure, deterministic)
+export { detectThreats, getDefaultThreatPatterns, THREAT_TYPES } from './detect/index.js'
+export type { DetectThreatsOptions, ThreatType } from './detect/index.js'
+
 // Lineage functions
 export { buildISLLineage } from './lineage/index.js'
 

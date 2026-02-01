@@ -1,14 +1,11 @@
 /**
  * emitSignal - Emits an ISLSignal from an internal ISLResult
- * 
+ *
  * @remarks
- * This function converts the internal ISL result (ISLResult)
- * into a semantic signal (ISLSignal) that can be consumed by other layers.
- * 
- * **Responsibility:**
- * - Extract essential semantic information from internal result
- * - Create signal without exposing ISL internals
- * - Add risk score and detections
+ * Converts ISLResult into a semantic signal (ISLSignal) for AAL/SDK.
+ * Aggregates all segment detections (from detectThreats → piDetection);
+ * hasThreats and riskScore are derived solely from that aggregation
+ * (no separate source of truth). Same ISLResult → same ISLSignal (deterministic).
  */
 
 import type { ISLResult } from '../types.js'
@@ -28,21 +25,16 @@ export function emitSignal(
   islResult: ISLResult,
   timestamp: number = Date.now()
 ): ISLSignal {
-  // Aggregate all detections from all segments
   const allDetections = islResult.segments
-    .filter(segment => segment.piDetection)
-    .flatMap(segment => segment.piDetection?.detections ?? [])
+    .filter((s): s is typeof s & { piDetection: NonNullable<typeof s.piDetection> } =>
+      s.piDetection != null
+    )
+    .flatMap(s => s.piDetection.detections)
 
-  // Create aggregated detection result
   const piDetection = createPiDetectionResult(allDetections)
-
-  // Calculate aggregated risk score
-  // If there are detections, use the detection result score
-  // If no detections, use minimum score
   const riskScore = piDetection.detected
     ? createRiskScore(piDetection.score)
     : MIN_RISK_SCORE
 
-  // Create and return signal
   return createISLSignal(riskScore, piDetection, timestamp)
 }

@@ -128,6 +128,59 @@ export function matchesPattern(pattern: Pattern, content: string): boolean {
   return pattern.regex.test(content)
 }
 
+/**
+ * Single match result for findAllMatches
+ */
+export type PatternMatch = {
+  readonly matched: string
+  readonly position: { start: number; end: number }
+}
+
+/**
+ * Finds all non-overlapping matches of a pattern in content.
+ * Uses a global clone of the pattern regex so each exec() call advances.
+ * Caps at MAX_MATCHES to avoid runaway on zero-width or many matches.
+ *
+ * @param pattern - Pattern to match
+ * @param content - Content to scan
+ * @param maxMatches - Cap on number of matches returned (default: MAX_MATCHES)
+ * @returns Array of { matched, position } (empty if no matches)
+ */
+export function findAllMatches(
+  pattern: Pattern,
+  content: string,
+  maxMatches: number = MAX_MATCHES
+): PatternMatch[] {
+  if (!content || typeof content !== 'string') {
+    throw new TypeError('Pattern.findAllMatches: content must be a non-empty string')
+  }
+  if (content.length > MAX_CONTENT_LENGTH) {
+    throw new Error(
+      `Pattern.findAllMatches: Content length (${content.length}) exceeds maximum allowed length (${MAX_CONTENT_LENGTH})`
+    )
+  }
+  if (maxMatches <= 0) {
+    return []
+  }
+
+  const flags = pattern.regex.flags.includes('g') ? pattern.regex.flags : pattern.regex.flags + 'g'
+  const globalRegex = new RegExp(pattern.regex.source, flags)
+  const results: PatternMatch[] = []
+  let match: RegExpExecArray | null
+
+  while (results.length < maxMatches && (match = globalRegex.exec(content)) !== null) {
+    results.push({
+      matched: match[0],
+      position: { start: match.index, end: match.index + match[0].length }
+    })
+    // Guard: zero-width match would make exec() not advance and loop forever
+    if (match[0].length === 0) {
+      break
+    }
+  }
+  return results
+}
+
 export function findMatch(pattern: Pattern, content: string): {
   matched: string
   position: { start: number; end: number }
