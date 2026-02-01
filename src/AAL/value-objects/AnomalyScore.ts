@@ -1,4 +1,4 @@
-import type { RiskScore } from '@/isl/types.js'
+import type { RiskScore } from '../../isl/value-objects/RiskScore.js'
 import type { AnomalyAction } from '../types.js'
 
 /**

@@ -2,15 +2,16 @@
  * @ai-pip/core - Core implementation of the AI-PIP protocol
  * 
  * @remarks
- * Main entry point that re-exports all layers (CSL, ISL, CPE,AAL ,Shared)
+ * Main entry point that re-exports all layers (CSL, ISL, CPE, AAL ,Shared)
  * 
  * You can import from specific layers:
  * - import { segment } from '@ai-pip/core/csl'
  * - import { sanitize } from '@ai-pip/core/isl'
  * - import { envelope } from '@ai-pip/core/cpe'
+ * - import { createAnomalyScore  } from '@ai-pip/core/AAL'
  * 
  * Or import everything from the main entry point:
- * - import { addLineageEntry, segment, sanitize, envelope } from '@ai-pip/core'
+ * - import { addLineageEntry, segment, sanitize, envelope, createAnomalyScore } from '@ai-pip/core'
  * 
  * Note: Shared functions are only available from the main entry point, not as a subpath.
  */
@@ -42,11 +43,12 @@ export type {
 } from './csl/index.js'
 
 // Re-export ISL
-export { sanitize } from './isl/index.js'
+export { sanitize, emitSignal, createISLSignal, isHighRiskSignal, isMediumRiskSignal, isLowRiskSignal } from './isl/index.js'
 export type {
   RiskScore,
   ISLSegment,
   ISLResult,
+  ISLSignal,
   PiDetection,
   PiDetectionResult,
   Pattern
@@ -68,6 +70,13 @@ export {
   MAX_CONTENT_LENGTH,
   MAX_PATTERN_LENGTH,
   MAX_MATCHES,
+  createRiskScore,
+  normalizeRiskScore,
+  isHighRiskScore,
+  isMediumRiskScore,
+  isLowRiskScore,
+  MIN_RISK_SCORE,
+  MAX_RISK_SCORE,
   SanitizationError
 } from './isl/index.js'
 
@@ -76,7 +85,23 @@ export {
   addLineageEntry,
   addLineageEntries,
   filterLineageByStep,
-  getLastLineageEntry
+  getLastLineageEntry,
+  formatLineageForAudit,
+  formatCSLForAudit,
+  formatISLForAudit,
+  formatISLSignalForAudit,
+  formatAALForAudit,
+  formatCPEForAudit,
+  formatPipelineAudit
+} from './shared/index.js'
+export type {
+  LineageEntryLike,
+  CSLResultLike,
+  ISLResultLike,
+  ISLSignalLike,
+  DecisionReasonLike,
+  RemovalPlanLike,
+  CPEResultLike
 } from './shared/index.js'
 
 // Re-export CPE
@@ -84,10 +109,9 @@ export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isVal
 export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './cpe/index.js'
 
 
-// AAL
+// Re-export AAL
 export {
     createAnomalyScore,
-    AnomalyScore,
     isHighRisk,
     isLowRisk,
     isWarnRisk,
@@ -96,15 +120,24 @@ export {
     isInstructionImmutable,
     isIntentBlocked,
     isScopeSensitive,
+    resolveAgentAction,
+    resolveAgentActionWithScore,
+    buildDecisionReason,
+    buildRemovalPlan,
+    buildAALLineage
 } from './AAL/index.js'
 
 
 export type {
     AnomalyAction,
+    AnomalyScore,
     RemovedInstruction,
     BlockedIntent,
     SensitiveScope,
     ProtectedRole,
-    ImmutableInstruction
+    ImmutableInstruction,
+    AgentPolicy,
+    DecisionReason,
+    RemovalPlan
 } from './AAL/index.js'
 

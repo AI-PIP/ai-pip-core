@@ -1,24 +1,28 @@
-
 /**
- * AAL (Agent Action Lock) - Core Semántico 
+ * AAL (Agent Action Lock) - Semantic Core
  * 
  * @remarks
- * Este es el core semántico de AAL. Solo contiene:
- * - Funciones puras (sin estado)
- * - Value objects inmutables
- * - Tipos
+ * This is the semantic core of AAL. It only contains:
+ * - Pure functions (stateless)
+ * - Immutable value objects
+ * - Types
+ * - Decision processing
  * 
- * **NO contiene:**
- * - Detección de prompt injection (va a ISL)
- * - Políticas (van a ISL)
- * - Anomaly scores (van a ISL)
- * - Normalización agresiva (va a ISL)
- * - Servicios con estado (van al SDK)
+ * **Architecture:**
+ * - Consumes ISLSignal (not ISLResult) to maintain layer separation
+ * - Applies configurable policies (ALLOW/WARN/BLOCK)
+ * - Builds instruction removal plans
+ * - Does not execute actions (that is SDK responsibility)
+ * 
+ * **Does NOT contain:**
+ * - Prompt injection detection (goes to ISL)
+ * - Stateful services (go to SDK)
+ * - Action execution (goes to SDK)
  */
 
+// Value objects
 export {
     createAnomalyScore,
-    AnomalyScore,
     isHighRisk,
     isLowRisk,
     isWarnRisk,
@@ -30,10 +34,33 @@ export {
 } from './value-objects/index.js'
 
 export type {
+    AnomalyScore,
+    PolicyRule
+} from './value-objects/index.js'
+
+// Process functions
+export {
+    resolveAgentAction,
+    resolveAgentActionWithScore,
+    buildDecisionReason,
+    buildRemovalPlan
+} from './process/index.js'
+
+export type {
+    DecisionReason,
+    RemovalPlan
+} from './process/index.js'
+
+// Lineage
+export { buildAALLineage } from './lineage/index.js'
+
+// Types
+export type {
     AnomalyAction,
     RemovedInstruction,
     BlockedIntent,
     SensitiveScope,
     ProtectedRole,
-    ImmutableInstruction
+    ImmutableInstruction,
+    AgentPolicy,
 } from './types.js'

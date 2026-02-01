@@ -1,30 +1,13 @@
 /**
- * Types for ISL (Instruction Sanitization Layer) - Core Semántico
+ * Types for ISL (Instruction Sanitization Layer) - Semantic Core
  */
 
-// Importar tipos de CSL y value objects
+// Import types from CSL and value objects
 import type { LineageEntry, TrustLevel } from '../csl/value-objects/index.js'
 import type { PiDetectionResult } from './value-objects/PiDetectionResult.js'
 
-
-/**
- * RiskScore
- *
- * Represents a normalized risk value produced by the core semantic layers.
- *
- * @remarks
- * - Value range is **0.0 to 1.0**
- * - `0`   = no risk detected
- * - `1`   = maximum risk confidence
- *
- * Although this type aliases `number`, it is intentionally defined
- * to preserve **semantic meaning**, enforce conceptual clarity,
- * and stabilize public contracts across layers and SDKs.
- *
- * This type MUST NOT be interpreted as a decision signal.
- * Decisions based on RiskScore belong to higher layers (AAL / SDK).
- */
-export type RiskScore = number
+// Re-export RiskScore for convenience
+export type { RiskScore } from './value-objects/RiskScore.js'
 
 
 
@@ -35,20 +18,20 @@ export type RiskScore = number
 
 
 /**
- * ISLSegment - Segmento sanitizado por ISL
+ * ISLSegment - Segment sanitized by ISL
  */
 export interface ISLSegment {
   readonly id: string
-  readonly originalContent: string        // Contenido original de CSL
-  readonly sanitizedContent: string        // Contenido sanitizado
-  readonly trust: TrustLevel               // Trust level del segmento original
-  readonly lineage: LineageEntry[]         // Linaje actualizado con ISL
-  readonly piDetection?: PiDetectionResult  // Detección de prompt injection
+  readonly originalContent: string        // Original content from CSL
+  readonly sanitizedContent: string        // Sanitized content
+  readonly trust: TrustLevel               // Trust level of the original segment
+  readonly lineage: LineageEntry[]         // Lineage updated with ISL
+  readonly piDetection?: PiDetectionResult  // Prompt injection detection
   readonly sanitizationLevel: 'minimal' | 'moderate' | 'aggressive'
 }
 
 /**
- * ISLResult - Resultado de la sanitización
+ * ISLResult - Sanitization result
  */
 export interface ISLResult {
   readonly segments: readonly ISLSegment[]

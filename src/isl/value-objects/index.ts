@@ -2,6 +2,7 @@
 export type { PiDetection } from './PiDetection.js'
 export type { PiDetectionResult } from './PiDetectionResult.js'
 export type { Pattern } from './Pattern.js'
+export type { RiskScore } from './RiskScore.js'
 // Funciones de creación
 export {
   createPiDetection,
@@ -29,6 +30,16 @@ export {
   MAX_PATTERN_LENGTH,
   MAX_MATCHES
 } from './Pattern.js'
+
+export {
+  createRiskScore,
+  normalizeRiskScore,
+  isHighRiskScore,
+  isMediumRiskScore,
+  isLowRiskScore,
+  MIN_RISK_SCORE,
+  MAX_RISK_SCORE
+} from './RiskScore.js'
 
 
 

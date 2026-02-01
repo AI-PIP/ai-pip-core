@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-01-26
+
+### ♻️ Architectural Refactor - ISL / AAL Separation
+
+- Refactored ISL (Instruction Sanitization Layer) to be strictly pure and semantic
+- Removed all decision-making logic from ISL:
+  - No Blocking
+  - No allowing
+  - No warnings
+  - No instruction removal
+- ISL is now responsible for:
+  - Malicious pattern detection (prompt injection, jailbreak, role hijacking, ...)
+  - Risk scoring (RiskScore)
+  - Content sanitization
+  - Signal emission and lineage preservation
+
+- Introduced AAL (Agent Action Lock) as a distinct hybrid layer:
+  - Consume ISL signal (RiskScore, detection)
+  - Applies configurable policies (ALLOW / WARN / BLOCK)
+  - Decides whether to remove malicious instructions
+  - Ensures only sanitized content reaches the LLM
+  - Designed as a core-defined contract, implemented at the SDK level
+
+- **Shared audit utilities**: Pure functions for ordered, human-readable audit output (`formatCSLForAudit`, `formatISLForAudit`, `formatISLSignalForAudit`, `formatAALForAudit`, `formatCPEForAudit`, `formatPipelineAudit`) for compliance and debugging
+
+- **Package**: Version set to 0.2.0; AAL export path corrected (`./aal` → `./dist/AAL/`)
+
+### 📚 Documentation
+
+- README.md updated to clarify the new ISL / AAL responsibility split; architecture and layer sections in English
+- **Use cases** section added with scenarios (secure chat, policy moderation, audit, DOM/API/SYSTEM sources, lineage)
+- Examples for policy-based moderation (ISL + AAL) and audit report using shared formatters
+- Audit and pretty-print utilities documented (formatCSLForAudit, formatISLForAudit, formatISLSignalForAudit, formatAALForAudit, formatCPEForAudit, formatPipelineAudit)
+
+### 🧪 Testing
+
+- Added unit tests for CSL (segment, classify), ISL (signals, emitSignal, buildISLResult, RiskScore), AAL (resolveAgentAction, buildDecisionReason, buildRemovalPlan, buildAALLineage, AnomalyScore, PolicyRule), CPE (envelope), and shared (audit formatters)
+- Integration tests updated for ISL Signal → AAL flow; all test messages in English
+- Coverage target met: **92%+** statements for CSL, ISL, AAL, CPE, and shared layers
+
+### ⚠️ Breaking Semantic Change
+
+- Although public APIs remain mostly stable, ISL behavior has changed semantically
+- Consumers must no longer expect ISL to perform actions or remove instructions
+- Decision logic must be handled by AAL or the SDK
+
 ## [0.1.8] - 2026-01-04
 
 ### 🐛 Critical Fixes - Origin Classification

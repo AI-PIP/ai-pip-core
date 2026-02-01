@@ -25,6 +25,9 @@ This package contains the **core** implementation of the protocol, which include
   - [Complete Example (Layer-Specific Imports)](#complete-example-layer-specific-imports)
   - [Example with additional functions](#example-with-additional-functions)
   - [Example: Multi-Layer Lineage and Audit Trail](#example-multi-layer-lineage-and-audit-trail)
+  - [Example: ISL Signal and AAL Integration](#example-isl-signal-aal)
+  - [Example: Audit and pretty-print utilities](#example-audit-utilities)
+  - [Use cases](#use-cases)
   - [Examples by Content Source](#examples-by-content-source)
     - [DOM Source (HTML Content)](#example-dom-source-html-content)
     - [UI Source (User Input)](#example-ui-source-user-input)
@@ -32,6 +35,7 @@ This package contains the **core** implementation of the protocol, which include
     - [API Source (External Data)](#example-api-source-external-data)
 - [Documentation](#documentation)
 - [Testing](#testing)
+  - [Coverage](#coverage)
 - [Development](#development)
 - [Requirements](#requirements)
 - [License](#license)
@@ -44,21 +48,73 @@ This package contains the **core** implementation of the protocol, which include
 <a id="architecture"></a>
 ## 🏗️ Architecture
 
-The AI-PIP protocol is composed of the following layers:
+The AI-PIP protocol is composed of the following layers with clear separation of responsibilities:
 
 ### ✅ Implemented Layers
 
 - **CSL (Context Segmentation Layer)**: Segments and classifies content according to its origin
-- **ISL (Instruction Sanitization Layer)**: Sanitizes instructions according to trust level
+- **ISL (Instruction Sanitization Layer)**: Detects malicious patterns, scores risk, and sanitizes content. Emits signals (ISLSignal) for other layers to consume.
+- **AAL (Agent Action Lock)**: Hybrid layer that consumes ISL signals and applies configurable policies (ALLOW/WARN/BLOCK). Core-defined contract, SDK-implemented.
 - **CPE (Cryptographic Prompt Envelope)**: Generates cryptographic envelope with HMAC-SHA256 signature
 
 ### 🔧 Shared Features
 
 - **Shared**: Shared functions and global incremental lineage (not a layer, but features shared between layers)
 
+### 🏛️ Architectural Principles
+
+#### Layer Separation and Signals
+
+**Fundamental rule**: A layer must never consume another layer's internal "result". It consumes a signal.
+
+- **ISLResult**: Internal result of the ISL pipeline (segments, lineage, full metadata)
+  - Intended for: debugging, reporter, internal traceability
+- **ISLSignal**: Semantic contract between layers (risk scores, detections, security signals)
+  - Intended for: AAL, SDK, Engine
+  - Does not expose ISL internals
+
+**Processing flow:**
+```
+ISL.process() 
+  → ISLResult          (internal)
+  → ISLSignal          (external)
+      → AAL consumes ISLSignal (not ISLResult)
+```
+
+#### Layer Organization
+
+Each layer follows a consistent structure:
+
+```
+Layer/
+ ├─ exceptions/        → what is invalid
+ ├─ value-objects/     → what it is
+ ├─ process/           → how it transforms
+ ├─ lineage/           → what happened
+ ├─ types.ts
+ └─ index.ts
+```
+
+**Benefits:**
+- ✅ No layer overlap
+- ✅ Clear separation of responsibilities
+- ✅ Core scales better
+- ✅ Clear separation between internals and semantic contracts
+
 ### 📝 Note on AAL and Model Gateway
 
-**AAL (Agent Action Lock)** and **Model Gateway** are SDK components, not part of the semantic core. The semantic core focuses on pure functions and signals, while these layers require operational decisions and side effects that belong to the implementation (SDK).
+**AAL (Agent Action Lock)** is a hybrid layer defined in the semantic core but implemented at the SDK level. The core provides:
+- Value objects (AnomalyScore, AgentPolicy, PolicyRule)
+- Semantic contracts and types
+- Pure functions for decision logic
+
+The SDK implements:
+- Operational decision execution
+- Policy enforcement
+- Instruction removal
+- Side effects and state management
+
+**Model Gateway** is a pure SDK component for routing and managing AI model interactions.
 
 <a id="installation"></a>
 ## 📦 Installation
@@ -97,8 +153,12 @@ import { segment, classifySource, createTrustLevel } from '@ai-pip/core/csl'
 import type { CSLResult, CSLSegment, TrustLevel } from '@ai-pip/core/csl'
 
 // Import from ISL (Instruction Sanitization Layer)
-import { sanitize } from '@ai-pip/core/isl'
-import type { ISLResult, ISLSegment } from '@ai-pip/core/isl'
+import { sanitize, createISLSignal } from '@ai-pip/core/isl'
+import type { ISLResult, ISLSegment, ISLSignal } from '@ai-pip/core/isl'
+
+// Import from AAL (Agent Action Lock)
+import { createAnomalyScore, resolveAgentAction } from '@ai-pip/core/aal'
+import type { AnomalyScore, AgentPolicy } from '@ai-pip/core/aal'
 
 // Import from CPE (Cryptographic Prompt Envelope)
 import { envelope, createNonce, createMetadata } from '@ai-pip/core/cpe'
@@ -139,7 +199,7 @@ This example demonstrates the complete AI-PIP processing pipeline:
 
 1. **CSL (Context Segmentation Layer)**: The `segment()` function takes user input and segments it into semantic chunks. Each segment is classified by its origin (`source: 'UI'`), which determines its trust level. The result contains multiple segments, each with its own trust classification and lineage tracking.
 
-2. **ISL (Instruction Sanitization Layer)**: The `sanitize()` function processes the segmented content and applies sanitization based on each segment's trust level. Trusted content (TC) receives minimal sanitization, semi-trusted (STC) gets moderate sanitization, and untrusted content (UC) receives aggressive sanitization to remove potential prompt injection attempts.
+2. **ISL (Instruction Sanitization Layer)**: The `sanitize()` function processes the segmented content and applies sanitization based on each segment's trust level. Trusted content (TC) receives minimal sanitization, semi-trusted (STC) gets moderate sanitization, and untrusted content (UC) receives aggressive sanitization to remove potential prompt injection attempts. ISL also detects malicious patterns and emits signals (ISLSignal) that can be consumed by AAL for policy-based decisions.
 
 3. **CPE (Cryptographic Prompt Envelope)**: The `envelope()` function creates a cryptographic wrapper around the sanitized content. It generates a unique nonce, timestamp, and HMAC-SHA256 signature to ensure the integrity and authenticity of the processed prompt. The resulting envelope can be safely sent to an AI model with cryptographic proof that the content hasn't been tampered with.
 
@@ -529,6 +589,193 @@ const cpeResult = envelope(islResult, 'your-secret-key')
 - Enhanced pattern matching and anomaly detection
 - Production-ready implementations with comprehensive security features
 - and more...
+
+---
+
+<a id="example-isl-signal-aal"></a>
+### Example: ISL Signal and AAL Integration
+
+**How signals work:** ISL produces an internal result (`ISLResult`). You call `emitSignal(islResult)` to obtain an `ISLSignal` (risk score, detections, `hasThreats`). AAL consumes only this signal via `resolveAgentAction(islSignal, policy)` and never sees `ISLResult`. Minimal flow:
+
+```typescript
+const islResult = sanitize(cslResult)       // ISL internal result
+const islSignal = emitSignal(islResult)      // External signal for other layers
+const action = resolveAgentAction(islSignal, policy)  // AAL consumes signal → 'ALLOW' | 'WARN' | 'BLOCK'
+```
+
+Full example below demonstrates the signal-based communication between ISL and AAL layers, following the architectural principle that layers should consume signals, not internal results:
+
+```typescript
+import {
+  segment,
+  sanitize,
+  emitSignal,
+  resolveAgentAction,
+  buildDecisionReason,
+  buildRemovalPlan
+} from '@ai-pip/core'
+import type { ISLSignal, AgentPolicy } from '@ai-pip/core'
+
+// 1. Segment content (CSL)
+const cslResult = segment({
+  content: 'User input with potential injection',
+  source: 'UI',
+  metadata: {}
+})
+
+// 2. Sanitize content (ISL) - produces internal result
+const islResult = sanitize(cslResult)
+
+// 3. Emit signal from ISL result - external contract
+const islSignal: ISLSignal = emitSignal(islResult)
+
+// 4. Define agent policy
+const policy: AgentPolicy = {
+  thresholds: {
+    warn: 0.3,
+    block: 0.7
+  },
+  removal: {
+    enabled: true
+  },
+  mode: 'balanced'
+}
+
+// 5. AAL consumes ISLSignal (not ISLResult) and resolves action
+const action = resolveAgentAction(islSignal, policy)
+console.log('Agent action:', action) // 'ALLOW', 'WARN', or 'BLOCK'
+
+// 6. Build decision reason for audit
+const reason = buildDecisionReason(action, islSignal, policy)
+console.log('Decision reason:', reason.reason)
+
+// 7. Build removal plan if threats detected
+const removalPlan = buildRemovalPlan(islSignal, policy)
+if (removalPlan.shouldRemove) {
+  console.log(`Removing ${removalPlan.instructionsToRemove.length} instruction(s)`)
+}
+```
+
+**What this example demonstrates:**
+
+1. **Signal-Based Communication**: ISL emits `ISLSignal` (external contract) instead of exposing `ISLResult` (internal). This maintains layer separation.
+
+2. **AAL Decision Making**: AAL consumes the signal and applies configurable policies to determine actions (ALLOW/WARN/BLOCK).
+
+3. **Separation of Concerns**: 
+   - ISL: Detects threats, scores risk, sanitizes content
+   - AAL: Evaluates signals, applies policies, builds removal plans
+   - SDK: Executes actions, removes instructions, manages state
+
+4. **Architectural Benefits**:
+   - ✅ No layer coupling (AAL doesn't know ISL internals)
+   - ✅ Clear contracts between layers
+   - ✅ Easy to test and maintain
+   - ✅ Scalable architecture
+
+**Key Principle**: A layer should never consume the internal "result" of another layer. It consumes a signal.
+
+---
+
+<a id="example-audit-utilities"></a>
+### Example: Audit and pretty-print utilities
+
+The core provides pure functions to format layer results and signals for clear, ordered audit output. Use them for logging, compliance, and debugging:
+
+```typescript
+import {
+  segment,
+  sanitize,
+  emitSignal,
+  envelope,
+  resolveAgentAction,
+  buildDecisionReason,
+  buildRemovalPlan,
+  formatCSLForAudit,
+  formatISLForAudit,
+  formatISLSignalForAudit,
+  formatAALForAudit,
+  formatCPEForAudit,
+  formatPipelineAudit
+} from '@ai-pip/core'
+import type { AgentPolicy } from '@ai-pip/core'
+
+// Run pipeline
+const cslResult = segment({ content: 'User input', source: 'UI', metadata: {} })
+const islResult = sanitize(cslResult)
+const islSignal = emitSignal(islResult)
+const cpeResult = envelope(islResult, 'secret-key')
+
+const policy: AgentPolicy = {
+  thresholds: { warn: 0.3, block: 0.7 },
+  removal: { enabled: true }
+}
+const action = resolveAgentAction(islSignal, policy)
+const reason = buildDecisionReason(action, islSignal, policy)
+const removalPlan = buildRemovalPlan(islSignal, policy)
+
+// Pretty-print per layer (ordered, human-readable)
+console.log(formatCSLForAudit(cslResult))
+console.log(formatISLForAudit(islResult))
+console.log(formatISLSignalForAudit(islSignal))
+console.log(formatAALForAudit(reason, removalPlan))
+console.log(formatCPEForAudit(cpeResult))
+
+// Full pipeline audit report
+const fullAudit = formatPipelineAudit(cslResult, islResult, cpeResult, {
+  title: 'AI-PIP Pipeline Audit',
+  sectionSeparator: '\n\n'
+})
+console.log(fullAudit)
+```
+
+**What this example demonstrates:**
+
+- **`formatCSLForAudit(result)`**: Formats CSL result (segments, trust, lineage) for audit.
+- **`formatISLForAudit(result)`**: Formats ISL result (segments, sanitization level, metadata, lineage).
+- **`formatISLSignalForAudit(signal)`**: Formats ISL signal (risk score, threats, detections) for audit.
+- **`formatAALForAudit(reason, removalPlan?)`**: Formats AAL decision reason and optional removal plan.
+- **`formatCPEForAudit(result)`**: Formats CPE result (metadata, signature, lineage).
+- **`formatPipelineAudit(csl, isl, cpe, options?)`**: Builds a single full pipeline audit string.
+
+All formatters accept minimal shapes (layer-agnostic) so you can pass any compatible object. Output is ordered and consistent for compliance and debugging.
+
+<a id="use-cases"></a>
+### Use cases
+
+Typical scenarios where AI-PIP core is used:
+
+| Use case | Layers involved | Goal |
+|----------|-----------------|------|
+| **Secure user chat** | CSL → ISL → CPE | Segment UI input, sanitize, wrap in envelope before sending to the model. |
+| **Policy-based moderation** | CSL → ISL → emitSignal → AAL | Get risk signal from ISL, resolve ALLOW/WARN/BLOCK and removal plan from AAL. |
+| **Audit and compliance** | Shared audit formatters | Pretty-print CSL/ISL/AAL/CPE results and full pipeline for logs and reports. |
+| **DOM / scraped content** | CSL (source: DOM) → ISL → CPE | Treat web content as untrusted (UC), apply aggressive sanitization. |
+| **System instructions** | CSL (source: SYSTEM) → ISL → CPE | Trusted content (TC), minimal sanitization. |
+| **Lineage and forensics** | All layers | Use lineage from results and `filterLineageByStep` / `getLastLineageEntry` for tracing. |
+
+**Example: policy-based moderation (ISL + AAL)**
+
+```typescript
+const cslResult = segment({ content: userInput, source: 'UI', metadata: {} })
+const islResult = sanitize(cslResult)
+const signal = emitSignal(islResult)
+const action = resolveAgentAction(signal, policy)
+const reason = buildDecisionReason(action, signal, policy)
+const plan = buildRemovalPlan(signal, policy)
+// Use action, reason, and plan in your SDK to enforce policy and optionally remove instructions.
+```
+
+**Example: audit report**
+
+```typescript
+const report = formatPipelineAudit(cslResult, islResult, cpeResult, {
+  title: 'Request Audit',
+  sectionSeparator: '\n---\n'
+})
+logger.info(report)
+```
+
 <a id="documentation"></a>
 ## 📚 Documentation
 
@@ -545,6 +792,7 @@ All AI-PIP protocol documentation is centralized in the [documentation repositor
 - **[Core Overview](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/CORE.md)** - Semantic core description
 - **[CSL (Context Segmentation Layer)](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/CSL.md)** - Context segmentation layer
 - **[ISL (Instruction Sanitization Layer)](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/ISL.md)** - Instruction sanitization layer
+- **[AAL (Agent Action Lock)](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/AAL.md)** - Agent Action Lock (hybrid layer)
 - **[CPE (Cryptographic Prompt Envelope)](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/CPE.md)** - Cryptographic prompt envelope
 - **[Shared](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/shared.md)** - Shared features and lineage
 
@@ -575,7 +823,9 @@ pnpm test:coverage
 pnpm test:ui
 ```
 
-**Current coverage**: 88.5%
+### Coverage
+- **Current coverage**: 92%+ (CSL, ISL, AAL, CPE, shared)
+
 
 <a id="development"></a>
 ## 🔧 Development
@@ -752,5 +1002,6 @@ For complete details and all version history, see [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 
-**Current Version**: 0.1.8  
-**Status**: Phase 1 - Core Layers (100% completed)
+**Current Version**: 0.2.0  
+**Status**: Phase 1 - Core Layers (100% completed)  
+**Latest**: Architectural refactor with ISL/AAL separation and signal-based communication

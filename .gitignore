@@ -422,6 +422,9 @@ FodyWeavers.xsd
 test/
 coverage/
 
+CHANGES_EXPLANATION.md
+TODO.md
+
 test-package-install.js
 # Build output
 dist/
