@@ -55,6 +55,7 @@
     "test:install": "node test-package-install.js",
     "verify-risk": "node scripts/verify-risk-score.mjs",
     "demo-menu": "node scripts/interactive-risk-menu.mjs",
+    "demo-full": "node scripts/demo-full-flow.mjs",
     "prepublishOnly": "pnpm build && pnpm lint && pnpm test --run && pnpm test:install"
   },
   "engines": {

@@ -13,6 +13,7 @@
 
 // Main pure functions
 export { sanitize } from './sanitize.js'
+export type { SanitizeOptions } from './sanitize.js'
 
 // Process functions
 export { buildISLResult, emitSignal } from './process/index.js'

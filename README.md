@@ -53,7 +53,7 @@ The AI-PIP protocol is composed of the following layers with clear separation of
 ### ✅ Implemented Layers
 
 - **CSL (Context Segmentation Layer)**: Segments and classifies content according to its origin
-- **ISL (Instruction Sanitization Layer)**: Detects malicious patterns, scores risk, and sanitizes content. Emits signals (ISLSignal) for other layers to consume.
+- **ISL (Instruction Sanitization Layer)**: Detects malicious patterns (`detectThreats`, ~287 default patterns), scores risk (configurable strategies), and sanitizes content. Each segment may carry `piDetection` (`PiDetectionResult`). Optional `SanitizeOptions.detectThreatsOptions` for custom patterns or limits. Emits signals (ISLSignal) for other layers to consume.
 - **AAL (Agent Action Lock)**: Hybrid layer that consumes ISL signals and applies configurable policies (ALLOW/WARN/BLOCK). Core-defined contract, SDK-implemented.
 - **CPE (Cryptographic Prompt Envelope)**: Generates cryptographic envelope with HMAC-SHA256 signature
 
@@ -153,11 +153,11 @@ import { segment, classifySource, createTrustLevel } from '@ai-pip/core/csl'
 import type { CSLResult, CSLSegment, TrustLevel } from '@ai-pip/core/csl'
 
 // Import from ISL (Instruction Sanitization Layer)
-import { sanitize, createISLSignal } from '@ai-pip/core/isl'
-import type { ISLResult, ISLSegment, ISLSignal } from '@ai-pip/core/isl'
+import { sanitize, createISLSignal, detectThreats, getDefaultThreatPatterns } from '@ai-pip/core/isl'
+import type { ISLResult, ISLSegment, ISLSignal, DetectThreatsOptions } from '@ai-pip/core/isl'
 
 // Import from AAL (Agent Action Lock)
-import { createAnomalyScore, resolveAgentAction } from '@ai-pip/core/aal'
+import { createAnomalyScore, resolveAgentAction, resolveAgentActionWithScore, buildRemovalPlanFromResult, applyRemovalPlan } from '@ai-pip/core/aal'
 import type { AnomalyScore, AgentPolicy } from '@ai-pip/core/aal'
 
 // Import from CPE (Cryptographic Prompt Envelope)
@@ -199,7 +199,7 @@ This example demonstrates the complete AI-PIP processing pipeline:
 
 1. **CSL (Context Segmentation Layer)**: The `segment()` function takes user input and segments it into semantic chunks. Each segment is classified by its origin (`source: 'UI'`), which determines its trust level. The result contains multiple segments, each with its own trust classification and lineage tracking.
 
-2. **ISL (Instruction Sanitization Layer)**: The `sanitize()` function processes the segmented content and applies sanitization based on each segment's trust level. Trusted content (TC) receives minimal sanitization, semi-trusted (STC) gets moderate sanitization, and untrusted content (UC) receives aggressive sanitization to remove potential prompt injection attempts. ISL also detects malicious patterns and emits signals (ISLSignal) that can be consumed by AAL for policy-based decisions.
+2. **ISL (Instruction Sanitization Layer)**: The `sanitize()` function processes the segmented content and applies sanitization based on each segment's trust level. Trusted content (TC) receives minimal sanitization, semi-trusted (STC) gets moderate sanitization, and untrusted content (UC) receives aggressive sanitization to remove potential prompt injection attempts. ISL runs `detectThreats` per segment (default ~287 patterns; optional `SanitizeOptions.detectThreatsOptions` for custom patterns or limits) and attaches `piDetection` (`PiDetectionResult`) to segments with detections. It emits signals (ISLSignal) that can be consumed by AAL for policy-based decisions.
 
 3. **CPE (Cryptographic Prompt Envelope)**: The `envelope()` function creates a cryptographic wrapper around the sanitized content. It generates a unique nonce, timestamp, and HMAC-SHA256 signature to ensure the integrity and authenticity of the processed prompt. The resulting envelope can be safely sent to an AI model with cryptographic proof that the content hasn't been tampered with.
 
@@ -254,7 +254,7 @@ This example shows the same processing pipeline but using layer-specific imports
 
 2. **Content Segmentation**: The `segment()` function breaks down the input into semantic segments. Each segment inherits the trust classification from its source, allowing different parts of the content to be processed according to their trustworthiness.
 
-3. **Content Sanitization**: The `sanitize()` function applies security measures based on each segment's trust level. This step removes or neutralizes potential prompt injection attempts, especially in untrusted content segments.
+3. **Content Sanitization**: The `sanitize()` function applies security measures based on each segment's trust level and runs threat detection per segment (each segment may have `piDetection`). This step removes or neutralizes potential prompt injection attempts, especially in untrusted content segments.
 
 4. **Nonce Generation**: `createNonce()` generates a unique random value that prevents replay attacks. This nonce is included in the cryptographic envelope to ensure each processed prompt is unique.
 
@@ -612,7 +612,9 @@ import {
   emitSignal,
   resolveAgentAction,
   buildDecisionReason,
-  buildRemovalPlan
+  buildRemovalPlan,
+  buildRemovalPlanFromResult,
+  applyRemovalPlan
 } from '@ai-pip/core'
 import type { ISLSignal, AgentPolicy } from '@ai-pip/core'
 
@@ -623,7 +625,7 @@ const cslResult = segment({
   metadata: {}
 })
 
-// 2. Sanitize content (ISL) - produces internal result
+// 2. Sanitize content (ISL) - produces internal result; segments may have piDetection
 const islResult = sanitize(cslResult)
 
 // 3. Emit signal from ISL result - external contract
@@ -649,10 +651,12 @@ console.log('Agent action:', action) // 'ALLOW', 'WARN', or 'BLOCK'
 const reason = buildDecisionReason(action, islSignal, policy)
 console.log('Decision reason:', reason.reason)
 
-// 7. Build removal plan if threats detected
+// 7. Build removal plan from signal (descriptive) or from result (actionable)
 const removalPlan = buildRemovalPlan(islSignal, policy)
 if (removalPlan.shouldRemove) {
-  console.log(`Removing ${removalPlan.instructionsToRemove.length} instruction(s)`)
+  const planFromResult = buildRemovalPlanFromResult(islResult, policy)
+  const cleanedResult = applyRemovalPlan(islResult, planFromResult)
+  console.log(`Removed ${planFromResult.instructionsToRemove.length} instruction(s); use cleanedResult for LLM`)
 }
 ```
 
@@ -780,7 +784,7 @@ Typical scenarios where AI-PIP core is used:
 | Use case | Layers involved | Goal |
 |----------|-----------------|------|
 | **Secure user chat** | CSL → ISL → CPE | Segment UI input, sanitize, wrap in envelope before sending to the model. |
-| **Policy-based moderation** | CSL → ISL → emitSignal → AAL | Get risk signal from ISL, resolve ALLOW/WARN/BLOCK and removal plan from AAL. |
+| **Policy-based moderation** | CSL → ISL → emitSignal → AAL | Get risk signal from ISL, resolve ALLOW/WARN/BLOCK; use `buildRemovalPlanFromResult` + `applyRemovalPlan` to get cleaned content for the LLM. |
 | **Audit and compliance** | Shared audit formatters | Pretty-print CSL/ISL/AAL/CPE results and full pipeline for logs and reports. |
 | **DOM / scraped content** | CSL (source: DOM) → ISL → CPE | Treat web content as untrusted (UC), apply aggressive sanitization. |
 | **System instructions** | CSL (source: SYSTEM) → ISL → CPE | Trusted content (TC), minimal sanitization. |
@@ -795,7 +799,9 @@ const signal = emitSignal(islResult)
 const action = resolveAgentAction(signal, policy)
 const reason = buildDecisionReason(action, signal, policy)
 const plan = buildRemovalPlan(signal, policy)
-// Use action, reason, and plan in your SDK to enforce policy and optionally remove instructions.
+const planFromResult = buildRemovalPlanFromResult(islResult, policy)
+const cleanedResult = applyRemovalPlan(islResult, planFromResult)
+// Use action, reason, plan; send cleanedResult.segments to the LLM when removal is enabled.
 ```
 
 **Example: audit report**

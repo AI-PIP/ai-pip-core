@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - (unreleased)
+
+### ✨ Added
+
+- **ISL – Threat detection**
+  - `detectThreats(content, options?)`: pure, deterministic function returning `readonly PiDetection[]`.
+  - Default patterns for known attack surfaces (prompt-injection, jailbreak, role hijacking, script_like, hidden_text); expanded set (~287 patterns).
+  - Integration in `sanitize`: each segment may carry `piDetection` (`PiDetectionResult`).
+  - Option `SanitizeOptions.detectThreatsOptions` for custom patterns or limits (`patterns`, `maxTotal`, `maxPerPattern`).
+  - `getDefaultThreatPatterns()`: returns the default set (cached, frozen).
+  - `THREAT_TYPES` and type `ThreatType` for deterministic taxonomy.
+
+- **ISL – Risk score strategies**
+  - Enum `RiskScoreStrategy`: `MAX_CONFIDENCE`, `SEVERITY_PLUS_VOLUME`, `WEIGHTED_BY_TYPE`.
+  - Pure calculators: `maxConfidenceCalculator`, `severityPlusVolumeCalculator`, `weightedByTypeCalculator`, `defaultWeightedByTypeCalculator`.
+  - `getCalculator(strategy, typeWeights?)`: returns the registered calculator for the strategy.
+  - Strategy fixed at `emitSignal`; reflected in `ISLSignal.metadata.strategy` for audit.
+
+- **emitSignal – Risk score options**
+  - `EmitSignalOptions`: `timestamp?`, `riskScore?: { strategy, typeWeights? }`.
+  - Default: `RiskScoreStrategy.MAX_CONFIDENCE`.
+  - Backward compatibility: `emitSignal(islResult, timestamp)` still supported.
+
+- **ISLSignal – Strategy metadata**
+  - `ISLSignal.metadata?: { strategy: RiskScoreStrategy }` for traceability.
+  - `createISLSignal(..., metadata?)` accepts optional fourth argument `metadata`.
+
+- **AAL – Actionable removal plan**
+  - `buildRemovalPlanFromResult(islResult, policy)`: builds `RemovalPlan` from `ISLResult` with `segmentId` per instruction.
+  - `applyRemovalPlan(islResult, plan)`: pure function that removes malicious ranges from each segment's `sanitizedContent`; clamps ranges to content; merges overlapping and adjacent ranges (gap only punctuation/whitespace); returns new `ISLResult`.
+  - `RemovedInstruction.segmentId?`: optional, present when the plan is built from `ISLResult`.
+  - Guards in `resolveAgentAction`, `resolveAgentActionWithScore`, `buildDecisionReason`, `buildRemovalPlan`, and `buildRemovalPlanFromResult` for safe handling of detections and signals.
+
+- **AAL – Resolve action with score**
+  - `resolveAgentActionWithScore(islSignal, policy)`: returns `{ action, anomalyScore }` for SDK/audit use.
+
+- **AAL – Colors for UI/audit**
+  - `ACTION_DISPLAY_COLORS` and `getActionDisplayColor(action)` for ALLOW/WARN/BLOCK.
+
+### 🔄 Changed
+
+- **sanitize (ISL)**: optional second argument `SanitizeOptions`; uses `detectThreats` per segment and assigns `piDetection` when detections exist; option `detectThreatsOptions` for patterns or limits.
+- **emitSignal (ISL)**: second argument may be `EmitSignalOptions` (object) or `number` (timestamp); computes risk score with configured strategy; includes `metadata.strategy` on the signal.
+- **RemovedInstruction (AAL)**: `type` is now `string` (any `pattern_type`); added `segmentId?: string`.
+
+### 📚 Documentation
+
+- **FEATURE.md**: per-version detail of new and modified features; table of methods/APIs changed in 0.3.0 with description of each change.
+
+### 📎 More information
+
+For specific method signatures and API changes in 0.3.0, see **[FEATURE.md](./FEATURE.md)**.
+
+---
+
 ## [0.2.0] - 2026-01-26
 
 ### ♻️ Architectural Refactor - ISL / AAL Separation
@@ -161,7 +216,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Problem**: When importing types from `@ai-pip/core` in SDK projects, TypeScript could not resolve nested type properties:
 - `this.data.trust.value` appeared as `any` instead of `TrustLevelType`
-- No autocompletado for nested properties
+- No autocomplete for nested properties
 - Type inference failed for complex types
 
 **Root Cause**: Incompatibility between `moduleResolution: "bundler"` (used in `@ai-pip-core`) and `moduleResolution: "nodenext"` (used in SDK projects). TypeScript couldn't follow the chain of type imports correctly.
@@ -173,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Impact**: 
 - ✅ Nested types now resolve correctly
-- ✅ Autocompletado works for all type properties
+- ✅ Autocomplete works for all type properties
 - ✅ Type inference works correctly in consuming projects
 - ✅ Better compatibility with Node.js ESM module resolution
 

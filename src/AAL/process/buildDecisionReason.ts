@@ -27,6 +27,31 @@ export interface DecisionReason {
   readonly detectionCount: number
 }
 
+const VALID_ACTIONS = new Set<AnomalyAction>(['ALLOW', 'WARN', 'BLOCK'])
+
+function assertBuildDecisionReasonArgs(
+  action: AnomalyAction,
+  islSignal: ISLSignal,
+  policy: AgentPolicy
+): void {
+  if (action == null || !VALID_ACTIONS.has(action)) {
+    throw new TypeError('AAL buildDecisionReason: action must be ALLOW, WARN, or BLOCK')
+  }
+  if (islSignal == null || typeof islSignal !== 'object') {
+    throw new TypeError('AAL buildDecisionReason: islSignal must be a non-null object')
+  }
+  if (typeof islSignal.riskScore !== 'number') {
+    throw new TypeError('AAL buildDecisionReason: islSignal.riskScore must be a number')
+  }
+  if (policy == null || typeof policy !== 'object') {
+    throw new TypeError('AAL buildDecisionReason: policy must be a non-null object')
+  }
+  const t = policy.thresholds
+  if (t == null || typeof t !== 'object' || typeof t.warn !== 'number' || typeof t.block !== 'number') {
+    throw new TypeError('AAL buildDecisionReason: policy.thresholds.warn and block must be numbers')
+  }
+}
+
 /**
  * Builds the reason for a decision
  * 
@@ -40,6 +65,11 @@ export function buildDecisionReason(
   islSignal: ISLSignal,
   policy: AgentPolicy
 ): DecisionReason {
+  assertBuildDecisionReasonArgs(action, islSignal, policy)
+
+  const detectionCount = islSignal.piDetection?.detections?.length ?? 0
+  const hasThreats = islSignal.hasThreats === true && detectionCount > 0
+
   let threshold: number
   let reason: string
 
@@ -54,8 +84,8 @@ export function buildDecisionReason(
     reason = `Risk score ${islSignal.riskScore.toFixed(3)} is below warn threshold ${threshold.toFixed(3)}`
   }
 
-  if (islSignal.hasThreats) {
-    reason += `. ${islSignal.piDetection.detections.length} threat(s) detected.`
+  if (hasThreats) {
+    reason += `. ${detectionCount} threat(s) detected.`
   }
 
   return {
@@ -63,7 +93,7 @@ export function buildDecisionReason(
     riskScore: islSignal.riskScore,
     threshold,
     reason,
-    hasThreats: islSignal.hasThreats,
-    detectionCount: islSignal.piDetection.detections.length
+    hasThreats,
+    detectionCount
   }
 }

@@ -10,9 +10,10 @@ Summary of **new features** and **modified features** per version (aligned with 
 
 - **ISL – Threat detection**  
   - `detectThreats(content, options?)`: pure, deterministic function returning `readonly PiDetection[]`.  
-  - Default patterns for known attack surfaces (prompt-injection, jailbreak, role hijacking, etc.).  
+  - Default patterns for known attack surfaces (prompt-injection, jailbreak, role hijacking, script_like, hidden_text); expanded set (~287 patterns).  
   - `findAllMatches` in `Pattern` for non-overlapping matches, with caps (MAX_MATCHES, MAX_PER_PATTERN) to avoid loops and result explosion.  
   - Integration in `sanitize`: each segment may carry `piDetection` (`PiDetectionResult`).  
+  - `SanitizeOptions.detectThreatsOptions`: optional `patterns`, `maxTotal`, `maxPerPattern`.  
   - Exports: `detectThreats`, `getDefaultThreatPatterns`, `THREAT_TYPES`, `DetectThreatsOptions`, `ThreatType`.
 
 - **ISL – Risk score strategies (RiskScoreStrategy)**  
@@ -33,6 +34,16 @@ Summary of **new features** and **modified features** per version (aligned with 
   - `createISLSignal(..., metadata?)` accepts optional metadata.  
   - Strategy used is reflected on the signal (auditability).
 
+- **AAL – Removal plan with real instructions**  
+  - `RemovedInstruction.segmentId?`: optional segment id when plan is built from ISLResult (for applyRemovalPlan).  
+  - `buildRemovalPlanFromResult(islResult, policy)`: builds RemovalPlan from ISL result with `segmentId` per instruction (actionable).  
+  - `applyRemovalPlan(islResult, plan)`: pure function that removes malicious ranges from each segment’s `sanitizedContent`; clamps ranges to content; merges overlapping and adjacent ranges (gap only punctuation/whitespace); returns new ISLResult (original preserved for audit).  
+  - `buildRemovalPlan(islSignal, policy)` kept for signal-only use (no segmentId; descriptive).  
+  - Guards in `resolveAgentAction`, `resolveAgentActionWithScore`, `buildDecisionReason`, `buildRemovalPlan`, `buildRemovalPlanFromResult` for safe PiDetection/signal handling.
+
+- **AAL – Resolve action with score**  
+  - `resolveAgentActionWithScore(islSignal, policy)`: returns `{ action, anomalyScore }` for SDK/audit use.
+
 ### Modified
 
 - **sanitize (ISL)**  
@@ -41,6 +52,29 @@ Summary of **new features** and **modified features** per version (aligned with 
 - **emitSignal (ISL)**  
   - Computes risk score with the configured strategy (calculators from riskScore module) instead of a fixed formula.  
   - Always includes `metadata.strategy` on the emitted signal.
+
+- **RemovedInstruction (AAL)**  
+  - `type` extended to `string` (any ISL pattern_type).  
+  - `segmentId?: string` added for actionable removal.
+
+### Methods changed (0.3.0)
+
+Summary of methods and APIs that changed or were added in 0.3.0 (per-method detail).
+
+| Method / API | What changed |
+|--------------|--------------|
+| **`sanitize(cslResult, options?)`** | New optional second argument **`SanitizeOptions`**: `detectThreatsOptions?: DetectThreatsOptions` (e.g. `patterns`, `maxTotal`, `maxPerPattern`). If omitted, behavior is unchanged (default patterns). |
+| **`emitSignal(islResult, options?)`** | Second argument may be **`EmitSignalOptions`** (object) or **number** (timestamp, compatibility). **Options**: `timestamp?`, `riskScore?: { strategy, typeWeights? }`. Default strategy: `MAX_CONFIDENCE`. **Returns**: `ISLSignal` includes **`metadata?: { strategy }`**. |
+| **`createISLSignal(riskScore, piDetection, timestamp?, metadata?)`** | New optional fourth argument **`metadata?: ISLSignalMetadata`** (e.g. `{ strategy }`). If provided, included on the returned signal. |
+| **`buildRemovalPlan(islSignal, policy)`** | Signature unchanged. **Returns**: `RemovedInstruction` items have **`type`** as `string` (any pattern_type) and do **not** include `segmentId` when built from signal only. |
+| **`buildRemovalPlanFromResult(islResult, policy)`** | **New**. Same return shape as `buildRemovalPlan` but built from **ISLResult**; each instruction has **`segmentId`** for use with **`applyRemovalPlan`**. |
+| **`applyRemovalPlan(islResult, plan)`** | **New**. Pure function: applies `plan.instructionsToRemove` (only those with **`segmentId`**) to each segment's `sanitizedContent`; clamps ranges to content; merges overlapping and adjacent ranges (punctuation/whitespace only); returns new **ISLResult** (lineage/metadata preserved). |
+| **`detectThreats(content, options?)`** | **Options**: `DetectThreatsOptions` with `patterns?`, `maxTotal?`, `maxPerPattern?`. Default patterns **expanded** (~287) for prompt-injection, jailbreak, role_hijacking, script_like, hidden_text. |
+| **`getDefaultThreatPatterns()`** | **Returns**: same type; default set **~287 patterns** (cached, frozen). |
+| **`resolveAgentActionWithScore(islSignal, policy)`** | **New** (AAL). Returns `{ action, anomalyScore }`; same criteria as `resolveAgentAction`; useful for SDK and audit. |
+| **`getCalculator(strategy, typeWeights?)`** | **New**. Returns the risk score calculator for the given strategy; used internally by `emitSignal`. |
+| **`ACTION_DISPLAY_COLORS`** / **`getActionDisplayColor(action)`** | **New** (AAL). Color constant per action (ALLOW/WARN/BLOCK) and helper for UI/audit. |
+| **RemovedInstruction** (type) | **`type`**: previously literal union; now **`string`**. **`segmentId?: string`** added (optional). |
 
 ---
 

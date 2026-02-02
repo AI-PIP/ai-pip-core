@@ -43,7 +43,9 @@ export {
     resolveAgentAction,
     resolveAgentActionWithScore,
     buildDecisionReason,
-    buildRemovalPlan
+    buildRemovalPlan,
+    buildRemovalPlanFromResult,
+    applyRemovalPlan
 } from './process/index.js'
 
 export type {

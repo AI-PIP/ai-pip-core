@@ -68,7 +68,8 @@ export type {
   RiskScoreCalculator,
   PiDetection,
   PiDetectionResult,
-  Pattern
+  Pattern,
+  SanitizeOptions
 } from './isl/index.js'
 export {
   createPiDetection,
@@ -141,6 +142,8 @@ export {
     resolveAgentActionWithScore,
     buildDecisionReason,
     buildRemovalPlan,
+    buildRemovalPlanFromResult,
+    applyRemovalPlan,
     buildAALLineage,
     ACTION_DISPLAY_COLORS,
     getActionDisplayColor

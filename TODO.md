@@ -43,11 +43,11 @@ This TODO list is derived from `CORE_COHERENCE_ISSUES.md` and represents the rec
 
 **Goal:** BLOCK decisions must result in real, applicable removals.
 
-- [ ] Update `buildRemovalPlan(islSignal, policy)` to:
+- [x] Update `buildRemovalPlan(islSignal, policy)` to:
   - return `shouldRemove: true` when `hasThreats && policy.removal.enabled`
   - populate `instructionsToRemove` from detections
-- [ ] Ensure instructions include enough positional data (segmentId + offsets/ranges).
-- [ ] Validate `applyRemovalPlanToResult()` removes only malicious fragments.
+- [x] Ensure instructions include enough positional data (segmentId + offsets/ranges): `buildRemovalPlanFromResult(islResult, policy)`.
+- [x] Validate `applyRemovalPlan(islResult, plan)` removes only malicious fragments (pure, merges overlapping ranges).
 
 **Success criteria:**
 - In demo (BLOCK), “AFTER” content differs from “BEFORE”.
@@ -92,21 +92,21 @@ This TODO list is derived from `CORE_COHERENCE_ISSUES.md` and represents the rec
 | **Lineage (formatLineageForAudit)** | Encabezado: “Trazabilidad temporal del pipeline (CSL → ISL)”. Breve leyenda: qué es cada entrada (CSL vs ISL), orden cronológico. | Un externo entiende el orden de las operaciones. |
 | **ANTES vs DESPUÉS (remoción)** | Encabezado fijo: “Contenido antes y después de aplicar el plan de remoción (solo relevante si eligió BLOCK)”. Por segmento: indicar “[cambió]” o “[sin cambios]” y, si cambió, opcionalmente resumir qué se removió (ej. “1 instrucción removida”). | Validación clara del efecto de la remoción. |
 
-### 5.3 Nivel de detalle para auditorías externas
+### 5.3 Level of detail for external audits
 
-- **Resumen ejecutivo opcional**: Una sección al inicio del reporte (o del menú de auditoría) con: URL/origen, número de segmentos, si hay amenazas (sí/no), decisión AAL, y si se aplicó remoción. En 3–5 líneas.
+- **Optional executive summary**: A section at the start of the report (or audit menu) with: URL/origin, number of segments, whether there are threats (yes/no), AAL decision, and whether removal was applied. In 3–5 lines.
 - **Detecciones legibles**: Si hay detecciones, no solo “count” sino tipo (prompt-injection, script-like, etc.) y, si el formatter lo permite, un ejemplo o posición (segmento X, offset Y) para que un humano pueda ubicar la amenaza.
 - **Documentación de fórmulas**: Donde el core documente risk score (p. ej. max(confidence)), exponer en auditoría una línea tipo “Risk score = max(confidence) de detecciones” para que sea reproducible y comprensible.
 
-### 5.4 Criterio de éxito
+### 5.4 Success criteria
 
-- Una persona **externa al proyecto** puede leer la salida de auditoría (consola o reporte) y entender:
-  - qué es CSL, ISL, AAL y Lineage;
-  - qué significa risk score, hasThreats y la decisión ALLOW/WARN/BLOCK;
-  - si hubo detecciones y en qué segmentos;
-  - si se aplicó remoción y qué cambió (ANTES vs DESPUÉS).
+- A person **external to the project** can read the audit output (console or report) and understand:
+  - what CSL, ISL, AAL and Lineage are;
+  - what risk score, hasThreats and the ALLOW/WARN/BLOCK decision mean;
+  - whether there were detections and in which segments;
+  - whether removal was applied and what changed (BEFORE vs AFTER).
 
-Estas mejoras pueden implementarse en el core (formatters compartidos) y/o en el SDK (capas de presentación que consuman los formatters del core y añadan texto explicativo).
+These improvements can be implemented in the core (shared formatters) and/or in the SDK (presentation layers that consume the core formatters and add explanatory text).
 
 ---
 

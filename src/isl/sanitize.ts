@@ -5,21 +5,29 @@ import type { ISLResult, ISLSegment } from './types.js'
 import { buildISLLineage } from './lineage/buildISLLineage.js'
 import { buildISLResult } from './process/buildISLResult.js'
 import { detectThreats } from './detect/index.js'
+import type { DetectThreatsOptions } from './detect/index.js'
 import { createPiDetectionResult } from './value-objects/PiDetectionResult.js'
+
+/** Options for sanitize. Enables flexible threat detection (e.g. custom patterns). */
+export interface SanitizeOptions {
+  /** Passed to detectThreats per segment (e.g. patterns override/extend). */
+  readonly detectThreatsOptions?: DetectThreatsOptions
+}
 
 /**
  * Sanitizes content according to trust level - pure function
- * 
+ *
  * @remarks
  * ISL applies differentiated sanitization according to trust level:
  * - TC: Minimal sanitization
  * - STC: Moderate sanitization
  * - UC: Aggressive sanitization
+ * Threat detection uses default patterns unless detectThreatsOptions (e.g. patterns) is provided.
  */
-export function sanitize(cslResult: CSLResult): ISLResult {
+export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): ISLResult {
   const startTime = Date.now()
   const segments: ISLSegment[] = []
-  
+  const detectOptions = options.detectThreatsOptions
 
   for (const cslSegment of cslResult.segments) {
     // Determine sanitization level according to trust level
@@ -31,8 +39,8 @@ export function sanitize(cslResult: CSLResult): ISLResult {
       sanitizationLevel
     )
 
-    // Detect threats (deterministic, bounded)
-    const detections = detectThreats(cslSegment.content)
+    // Detect threats (deterministic, bounded; optional custom patterns)
+    const detections = detectThreats(cslSegment.content, detectOptions)
     const piDetection =
       detections.length > 0 ? createPiDetectionResult(detections) : undefined
 

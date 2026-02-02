@@ -53,22 +53,16 @@ export type ImmutableInstruction = string
  * and marked for removal by the Agent Action Lock (AAL).
  *
  * @remarks
- * This interface is descriptive only.
- * The actual removal is performed by the SDK.
- *
- * Instances of this type are typically recorded in lineage
- * for auditability and explainability.
+ * When built from ISLResult (buildRemovalPlanFromResult), segmentId is set
+ * so applyRemovalPlan can remove the range from the correct segment.
+ * When built from ISLSignal only, segmentId is absent (plan is descriptive only).
  */
 export interface RemovedInstruction {
   /**
    * The classified threat category that triggered the removal.
+   * Matches ISL pattern_type (e.g. prompt-injection, jailbreak, role_hijacking).
    */
-  readonly type:
-    | 'system_command'
-    | 'role_swapping'
-    | 'jailbreak'
-    | 'override'
-    | 'manipulation'
+  readonly type: string
 
   /**
    * The detected pattern or signature that matched the threat.
@@ -76,7 +70,7 @@ export interface RemovedInstruction {
   readonly pattern: string
 
   /**
-   * The exact position of the instruction within the original content.
+   * The exact position of the instruction within the segment (start inclusive, end exclusive).
    */
   readonly position: Position
 
@@ -84,6 +78,12 @@ export interface RemovedInstruction {
    * Human-readable explanation of why the instruction was removed.
    */
   readonly description: string
+
+  /**
+   * Segment id (from ISLSegment.id) when plan is built from ISLResult.
+   * Required for applyRemovalPlan to target the correct segment.
+   */
+  readonly segmentId?: string
 }
 
 /**
