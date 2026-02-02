@@ -5,7 +5,7 @@
 
 import type { PiDetection } from '../value-objects/PiDetection.js'
 
-/** Registered risk score strategies. No custom inline strategies. */
+/** Registered risk score strategies. No custom inline strategies . */
 export enum RiskScoreStrategy {
   MAX_CONFIDENCE = 'max-confidence',
   SEVERITY_PLUS_VOLUME = 'severity-plus-volume',
