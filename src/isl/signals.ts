@@ -30,6 +30,16 @@
 
 import type { RiskScore } from './value-objects/RiskScore.js'
 import type { PiDetectionResult } from './value-objects/PiDetectionResult.js'
+import type { RiskScoreStrategy } from './riskScore/types.js'
+
+/**
+ * Metadata for the signal (auditability, reproducibility).
+ * Strategy is fixed at emit time; no per-segment or dynamic strategy.
+ */
+export interface ISLSignalMetadata {
+  /** Risk score strategy used to compute riskScore. */
+  readonly strategy: RiskScoreStrategy
+}
 
 /**
  * ISLSignal - Semantic signal emitted by ISL
@@ -61,6 +71,12 @@ export interface ISLSignal {
    * Useful for auditing and traceability.
    */
   readonly timestamp: number
+
+  /**
+   * Optional metadata (e.g. risk score strategy used).
+   * Ensures auditability and reproducibility.
+   */
+  readonly metadata?: ISLSignalMetadata
 }
 
 /**
@@ -73,12 +89,14 @@ export interface ISLSignal {
  * @param riskScore - Risk score value
  * @param piDetection - Prompt injection detection result
  * @param timestamp - Timestamp of the signal (default: Date.now())
+ * @param metadata - Optional metadata (e.g. risk score strategy) for auditability
  * @returns ISLSignal - Semantic signal for external consumption
  */
 export function createISLSignal(
   riskScore: RiskScore,
   piDetection: PiDetectionResult,
-  timestamp: number = Date.now()
+  timestamp: number = Date.now(),
+  metadata?: ISLSignalMetadata
 ): ISLSignal {
   // Validar riskScore
   if (typeof riskScore !== 'number' || !Number.isFinite(riskScore)) {
@@ -98,7 +116,8 @@ export function createISLSignal(
     riskScore,
     piDetection,
     hasThreats: piDetection.detected,
-    timestamp
+    timestamp,
+    ...(metadata != null && { metadata: Object.freeze(metadata) })
   }
 }
 

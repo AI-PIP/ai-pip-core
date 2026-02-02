@@ -43,12 +43,29 @@ export type {
 } from './csl/index.js'
 
 // Re-export ISL
-export { sanitize, emitSignal, createISLSignal, isHighRiskSignal, isMediumRiskSignal, isLowRiskSignal } from './isl/index.js'
+export {
+  sanitize,
+  emitSignal,
+  createISLSignal,
+  isHighRiskSignal,
+  isMediumRiskSignal,
+  isLowRiskSignal,
+  RiskScoreStrategy,
+  getCalculator,
+  maxConfidenceCalculator,
+  severityPlusVolumeCalculator,
+  weightedByTypeCalculator,
+  defaultWeightedByTypeCalculator,
+  DEFAULT_TYPE_WEIGHTS
+} from './isl/index.js'
 export type {
   RiskScore,
   ISLSegment,
   ISLResult,
   ISLSignal,
+  ISLSignalMetadata,
+  EmitSignalOptions,
+  RiskScoreCalculator,
   PiDetection,
   PiDetectionResult,
   Pattern
@@ -124,7 +141,9 @@ export {
     resolveAgentActionWithScore,
     buildDecisionReason,
     buildRemovalPlan,
-    buildAALLineage
+    buildAALLineage,
+    ACTION_DISPLAY_COLORS,
+    getActionDisplayColor
 } from './AAL/index.js'
 
 

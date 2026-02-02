@@ -44,7 +44,7 @@ This package contains the **core** implementation of the protocol, which include
 - [Import Strategies](#import-strategies)
 - [Official SDK](#official-sdk)
 - [CHANGELOG](#changelog)
-
+- [FEATURES](#features)
 <a id="architecture"></a>
 ## 🏗️ Architecture
 
@@ -675,6 +675,38 @@ if (removalPlan.shouldRemove) {
 
 **Key Principle**: A layer should never consume the internal "result" of another layer. It consumes a signal.
 
+#### Risk score strategies (ISL)
+
+The risk score on the signal is derived from aggregated detections using a **strategy** chosen at emit time. Only registered strategies are allowed (auditability and reproducibility).
+
+| Strategy | Description | When to use |
+|----------|-------------|-------------|
+| **MAX_CONFIDENCE** (default) | Single highest confidence among detections. | Simple, conservative; good default. |
+| **SEVERITY_PLUS_VOLUME** | Highest confidence plus a small bump per extra detection (volume). | When multiple detections should raise risk. |
+| **WEIGHTED_BY_TYPE** | Weight by pattern type (e.g. jailbreak vs prompt-injection). | When some threat types should count more. |
+
+```typescript
+import { emitSignal, RiskScoreStrategy } from '@ai-pip/core/isl'
+
+// Default: MAX_CONFIDENCE
+const signal = emitSignal(islResult)
+
+// Explicit strategy
+const signalSev = emitSignal(islResult, {
+  riskScore: { strategy: RiskScoreStrategy.SEVERITY_PLUS_VOLUME }
+})
+
+// WEIGHTED_BY_TYPE with custom weights
+const signalWeighted = emitSignal(islResult, {
+  riskScore: {
+    strategy: RiskScoreStrategy.WEIGHTED_BY_TYPE,
+    typeWeights: { 'prompt-injection': 1.2, jailbreak: 1 }
+  }
+})
+```
+
+The strategy used is stored in **`signal.metadata.strategy`** for auditability. For full API and formulas, see the [ISL layer documentation](https://github.com/AI-PIP/ai-pip-docs/blob/main/docs/core/layers/ISL.md) in the protocol docs.
+
 ---
 
 <a id="example-audit-utilities"></a>
@@ -804,6 +836,7 @@ All AI-PIP protocol documentation is centralized in the [documentation repositor
 ### Code-Specific Documentation
 
 - **[CHANGELOG](./CHANGELOG.md)** - Package version history
+- **[FEATURE](./FEATURE.md)** - New and modified features by version
 - **[API Reference](#-basic-usage)** - Usage examples in this README
 
 <a id="testing"></a>
@@ -999,6 +1032,11 @@ For SDK development updates and roadmap, see the [AI-PIP Documentation Repositor
 **What this improves**: Users visiting the package on npmjs can now better understand not just what each function does, but how to use them in real-world scenarios. The examples now provide context about the complete processing pipeline and the purpose of each step, with accurate trust level information.
 
 For complete details and all version history, see [CHANGELOG.md](./CHANGELOG.md).
+
+<a id="features"></a>
+## 📋 Features
+
+Summary of new and modified features per version (aligned with the changelog): **[FEATURE.md](./FEATURE.md)**.
 
 ---
 

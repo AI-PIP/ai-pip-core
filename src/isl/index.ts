@@ -16,6 +16,7 @@ export { sanitize } from './sanitize.js'
 
 // Process functions
 export { buildISLResult, emitSignal } from './process/index.js'
+export type { EmitSignalOptions } from './process/index.js'
 
 // Detect - threat detection (pure, deterministic)
 export { detectThreats, getDefaultThreatPatterns, THREAT_TYPES } from './detect/index.js'
@@ -25,13 +26,24 @@ export type { DetectThreatsOptions, ThreatType } from './detect/index.js'
 export { buildISLLineage } from './lineage/index.js'
 
 // Signals - Semantic contract between layers
-export type { ISLSignal } from './signals.js'
+export type { ISLSignal, ISLSignalMetadata } from './signals.js'
 export {
   createISLSignal,
   isHighRiskSignal,
   isMediumRiskSignal,
   isLowRiskSignal
 } from './signals.js'
+
+// Risk score strategy - registered calculators only (auditability, reproducibility)
+export { RiskScoreStrategy, getCalculator } from './riskScore/index.js'
+export type { RiskScoreCalculator } from './riskScore/types.js'
+export {
+  maxConfidenceCalculator,
+  severityPlusVolumeCalculator,
+  weightedByTypeCalculator,
+  defaultWeightedByTypeCalculator,
+  DEFAULT_TYPE_WEIGHTS
+} from './riskScore/index.js'
 
 // Value objects
 export type { PiDetection, PiDetectionResult, Pattern, RiskScore } from './value-objects/index.js'

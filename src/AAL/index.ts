@@ -54,6 +54,9 @@ export type {
 // Lineage
 export { buildAALLineage } from './lineage/index.js'
 
+// Display constants (for SDK/UI)
+export { ACTION_DISPLAY_COLORS, getActionDisplayColor } from './constants.js'
+
 // Types
 export type {
     AnomalyAction,
