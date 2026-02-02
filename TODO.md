@@ -71,32 +71,37 @@ This TODO list is derived from `CORE_COHERENCE_ISSUES.md` and represents the rec
 
 ---
 
-## 5. Mejoras de visualización y auditoría (core 0.3.0)
+## 5. Audit data and readability (core 0.3.0)
 
-**Objetivo:** que las salidas del pipeline (formatters de auditoría, reportes, menú de auditoría) sean **claramente legibles por alguien externo al proyecto**, con un nivel de detalle que permita entender qué se está leyendo sin conocer la jerga interna.
+**Goal:** The core focuses on **what data** the audit formatters expose so an external auditor can understand what they are reading without internal jargon. **Visual presentation is not part of the core**; a separate script (e.g. `scripts/audit-report.mjs`) can consume the formatted strings for a nicer view (menus, colors, BEFORE vs AFTER diff).
 
-### 5.1 Principios
+### 5.1 Principles (core = data, scripts = presentation)
 
-- **Glosario en contexto**: Cada bloque de auditoría (CSL, ISL, ISL Signal, AAL, Lineage) debe ir acompañado de una breve explicación de qué representa y qué campos significan (o un enlace a glosario).
-- **Etiquetas humanas**: Evitar solo siglas/acrónimos sin definir: explicar TC/STC/UC, ALLOW/WARN/BLOCK, risk score, detecciones, removal plan.
-- **Origen y trazabilidad**: En cada sección, indicar de dónde vienen los datos (p. ej. “Resultado de la segmentación CSL”, “Señal emitida por ISL para AAL”) para que un auditor entienda el flujo.
+- **Glossary in context**: Each audit block (CSL, ISL, ISL Signal, AAL, Lineage) includes a short explanation of what it represents and what the fields mean.
+- **Human-readable labels**: TC/STC/UC, ALLOW/WARN/BLOCK, risk score (0–1), detections (count and types) are explained in the output.
+- **Origin and traceability**: Each section states where the data comes from (p. ej. “Resultado de la segmentación CSL”, “Señal emitida por ISL para AAL”) so an auditor understands the flow.
 
-### 5.2 Mejoras concretas en formatters / salida
+### 5.2 Implemented in core (shared/audit.ts)
 
-| Área | Mejora | Resultado esperado |
-|------|--------|--------------------|
-| **CSL (formatCSLForAudit)** | Encabezado con 1–2 líneas que expliquen: “Contenido segmentado y clasificado por confianza (TC/STC/UC)”. Por segmento: indicar “origen” (p. ej. DOM, rol estructural) si está disponible. | Un externo entiende qué es cada segmento y qué significa la confianza. |
-| **ISL (formatISLForAudit)** | Encabezado: “Contenido sanitizado por ISL; nivel de sanitización por segmento”. Incluir por segmento: trust, nivel (aggressive/etc.), longitud antes/después, y si hay detecciones en ese segmento (sí/no o contador). | Claridad sobre qué se sanitizó y si hay amenazas por segmento. |
-| **ISL Signal (formatISLSignalForAudit)** | Encabezado: “Señal de riesgo para AAL: resume amenazas y riesgo global”. Explicar en una línea: riskScore (qué es), hasThreats (qué implica), detections (cuántas y de qué tipo). | El auditor entiende por qué AAL va a recomendar ALLOW/WARN/BLOCK. |
-| **AAL (formatAALForAudit)** | Encabezado: “Decisión del Agent Action Lock”. Explicar: acción recomendada, razón (en lenguaje claro), umbrales usados (warn/block), y si hay plan de remoción (shouldRemove, cuántas instrucciones). | Queda claro qué se decidió y por qué; si hay algo que remover, se ve explícito. |
-| **Lineage (formatLineageForAudit)** | Encabezado: “Trazabilidad temporal del pipeline (CSL → ISL)”. Breve leyenda: qué es cada entrada (CSL vs ISL), orden cronológico. | Un externo entiende el orden de las operaciones. |
-| **ANTES vs DESPUÉS (remoción)** | Encabezado fijo: “Contenido antes y después de aplicar el plan de remoción (solo relevante si eligió BLOCK)”. Por segmento: indicar “[cambió]” o “[sin cambios]” y, si cambió, opcionalmente resumir qué se removió (ej. “1 instrucción removida”). | Validación clara del efecto de la remoción. |
+| Area | What the formatter exposes (data) | Status |
+|------|-----------------------------------|--------|
+| **CSL (formatCSLForAudit)** | Header: content segmented by trust; legend TC/STC/UC; origin; per segment: id, trust (with label), content_length. | “Contenido segmentado y clasificado por confianza (TC/STC/UC)”. Por segmento: indicar “origen” (p. ej. DOM, rol estructural) si está disponible. | Done |
+| **ISL (formatISLForAudit)** | Header: content sanitized by ISL, level per segment; origin; per segment: trust, level, length before/after, **detections: count and types** (when piDetection present). | “Contenido sanitizado por ISL; nivel de sanitización por segmento”. Incluir por segmento: trust, nivel (aggressive/etc.), longitud antes/después, y si hay detecciones en ese segmento (sí/no o contador). | Claridad sobre qué se sanitizó y si hay amenazas por segmento. |
+| **ISL Signal (formatISLSignalForAudit)** | Header: risk signal for AAL; origin; riskScore (0–1), hasThreats, **detection types**; strategy when present. | “Señal de riesgo para AAL: resume amenazas y riesgo global”. Explicar en una línea: riskScore (qué es), hasThreats (qué implica), detections (cuántas y de qué tipo). | Done |
+| **AAL (formatAALForAudit)** | Header: Agent Action Lock decision; origin; action (ALLOW/WARN/BLOCK with legend), reason, thresholds, removal plan (shouldRemove, instructions to remove). | “Decisión del Agent Action Lock”. Explicar: acción recomendada, razón (en lenguaje claro), umbrales usados (warn/block), y si hay plan de remoción (shouldRemove, cuántas instrucciones). | Done |
+| **Lineage (formatLineageForAudit)** | Legend: chronological traceability; each entry = step + timestamp. | “Trazabilidad temporal del pipeline (CSL → ISL)”. Breve leyenda: qué es cada entrada (CSL vs ISL), orden cronológico. | Done |
+| **CPE (formatCPEForAudit)** | Header: envelope (nonce, timestamp, signature); origin. | Done |
 
-### 5.3 Level of detail for external audits
+**BEFORE vs AFTER (removal)**: Not in core; a script (e.g. `scripts/audit-report.mjs`) can add a BEFORE vs AFTER view when removal was applied.
 
-- **Optional executive summary**: A section at the start of the report (or audit menu) with: URL/origin, number of segments, whether there are threats (yes/no), AAL decision, and whether removal was applied. In 3–5 lines.
-- **Detecciones legibles**: Si hay detecciones, no solo “count” sino tipo (prompt-injection, script-like, etc.) y, si el formatter lo permite, un ejemplo o posición (segmento X, offset Y) para que un humano pueda ubicar la amenaza.
-- **Documentación de fórmulas**: Donde el core documente risk score (p. ej. max(confidence)), exponer en auditoría una línea tipo “Risk score = max(confidence) de detecciones” para que sea reproducible y comprensible.
+
+
+### 5.3 Optional: script(s) for viewing
+
+- **Executive summary / BEFORE vs AFTER**: A script (e.g. `scripts/audit-report.mjs`) can call the core formatters and add a short summary (URL/origin, segments, threats yes/no, AAL decision, removal applied) and/or a BEFORE vs AFTER view per segment when removal was applied. Visual layout and styling stay in the script, not in core.
+- **Formula in audit**: Risk score formula is documented; strategy is shown in the signal formatter when present.
+
+- **Readable detections**: Core formatters now show detection types (count and types per segment / in signal).
 
 ### 5.4 Success criteria
 
@@ -106,7 +111,7 @@ This TODO list is derived from `CORE_COHERENCE_ISSUES.md` and represents the rec
   - whether there were detections and in which segments;
   - whether removal was applied and what changed (BEFORE vs AFTER).
 
-These improvements can be implemented in the core (shared formatters) and/or in the SDK (presentation layers that consume the core formatters and add explanatory text).
+Core does **not** implement visual styling; scripts can be added later to display this data in a richer way.
 
 ---
 

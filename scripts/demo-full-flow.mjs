@@ -12,10 +12,13 @@ import {
   sanitize,
   emitSignal,
   resolveAgentAction,
+  buildDecisionReason,
   buildRemovalPlanFromResult,
   applyRemovalPlan,
   getActionDisplayColor,
-  RiskScoreStrategy
+  RiskScoreStrategy,
+  formatPipelineAuditFull,
+  createAuditRunId
 } from '../dist/index.js'
 
 const policy = Object.freeze({
@@ -54,10 +57,15 @@ function normalizeAfterRemovalDisplay(text) {
 }
 
 function runFlow(content) {
+  const runId = createAuditRunId()
+  const generatedAt = Date.now()
+
   const cslResult = segment({ content, source: 'UI', metadata: {} })
   const islResult = sanitize(cslResult)
   const signal = emitSignal(islResult, { riskScore: { strategy: RiskScoreStrategy.MAX_CONFIDENCE } })
   const action = resolveAgentAction(signal, policy)
+  const reason = buildDecisionReason(action, signal, policy)
+  const removalPlan = buildRemovalPlanFromResult(islResult, policy)
 
   const originalFullText = fullTextFromSegments(islResult.segments)
 
@@ -81,14 +89,13 @@ function runFlow(content) {
   console.log(`  ${color}${action}${ANSI.reset} (${getActionDisplayColor(action)})`)
 
   if (action === 'BLOCK') {
-    const plan = buildRemovalPlanFromResult(islResult, policy)
-    const afterRemoval = applyRemovalPlan(islResult, plan)
+    const afterRemoval = applyRemovalPlan(islResult, removalPlan)
     const afterFullText = fullTextFromSegments(afterRemoval.segments)
     const afterDisplay = normalizeAfterRemovalDisplay(afterFullText)
 
     console.log('')
     console.log(`${ANSI.bold}--- Removal plan (instructions to remove) ---${ANSI.reset}`)
-    for (const inst of plan.instructionsToRemove) {
+    for (const inst of removalPlan.instructionsToRemove) {
       console.log(`  - [${inst.segmentId ?? '?'}] ${inst.type}: "${inst.pattern}" @ [${inst.position.start},${inst.position.end})`)
     }
 
@@ -100,6 +107,15 @@ function runFlow(content) {
     console.log(ANSI.dim + afterDisplay + ANSI.reset)
   }
 
+  const report = formatPipelineAuditFull(cslResult, islResult, signal, reason, removalPlan, null, {
+    runId,
+    generatedAt,
+    title: 'Audit report (CSL → ISL → Signal → AAL)'
+  })
+  console.log('')
+  console.log(`${ANSI.bold}--- Audit report (CSL → ISL → Signal → AAL) ---${ANSI.reset}`)
+  console.log('')
+  console.log(report)
   console.log('')
 }
 

@@ -44,6 +44,14 @@ Summary of **new features** and **modified features** per version (aligned with 
 - **AAL – Resolve action with score**  
   - `resolveAgentActionWithScore(islSignal, policy)`: returns `{ action, anomalyScore }` for SDK/audit use.
 
+- **Shared – Audit improvements (run id, JSON, logs, full pipeline)**  
+  - **Run identifier**: `createAuditRunId()` generates a unique run id; all full-pipeline formatters accept `options.runId` and `options.generatedAt` for correlation across reports and logs.  
+  - **Full pipeline audit**: `formatPipelineAuditFull(csl, isl, signal, aalReason, removalPlan?, cpe?, options?)` builds a single report (CSL → ISL → Signal → AAL → optional CPE) with run id and generated-at timestamp; lineage in each section.  
+  - **formatPipelineAudit** extended: `options.includeSignalAndAAL`, `options.signal`, `options.aalReason`, `options.removalPlan` to include ISL Signal and AAL sections in the existing pipeline report.  
+  - **JSON variant**: `buildFullAuditPayload(csl, isl, signal, reason, options?)` returns a JSON-serializable object (runId, generatedAt, summary, sections with lineage). `formatPipelineAuditAsJson(...)` returns the JSON string; `options.compact: true` for one-line output (logs, SIEM).  
+  - **Audit for logs**: `buildAuditLogEntry(signal, reason, options?)` returns a compact summary (`runId`, `generatedAtIso`, `action`, `riskScore`, `hasThreats`, `detectionCount`) for one-line logging.  
+  - Types: `AuditRunInfo`, `AuditLogSummary`, `FullPipelineAuditOptions`, `PipelineAuditJsonOptions`.
+
 ### Modified
 
 - **sanitize (ISL)**  
@@ -75,6 +83,12 @@ Summary of methods and APIs that changed or were added in 0.3.0 (per-method deta
 | **`getCalculator(strategy, typeWeights?)`** | **New**. Returns the risk score calculator for the given strategy; used internally by `emitSignal`. |
 | **`ACTION_DISPLAY_COLORS`** / **`getActionDisplayColor(action)`** | **New** (AAL). Color constant per action (ALLOW/WARN/BLOCK) and helper for UI/audit. |
 | **RemovedInstruction** (type) | **`type`**: previously literal union; now **`string`**. **`segmentId?: string`** added (optional). |
+| **`createAuditRunId()`** | **New** (Shared). Returns a unique run id (UUID or time-based) for audit correlation. |
+| **`buildAuditLogEntry(signal, reason, options?)`** | **New** (Shared). Returns compact summary for one-line logging: runId, generatedAtIso, action, riskScore, hasThreats, detectionCount. |
+| **`buildFullAuditPayload(csl, isl, signal, reason, options?)`** | **New** (Shared). Returns JSON-serializable object with runId, generatedAt, summary, sections (csl, isl, islSignal, aal, cpe?); lineage in each section. |
+| **`formatPipelineAuditFull(csl, isl, signal, aalReason, removalPlan?, cpe?, options?)`** | **New** (Shared). Full pipeline text report (CSL → ISL → Signal → AAL → optional CPE) with run id and generated-at; options: runId, generatedAt, includeCpe, title, sectionSeparator. |
+| **`formatPipelineAuditAsJson(...)`** | **New** (Shared). Returns JSON string of full audit payload; options.compact for one-line. |
+| **`formatPipelineAudit(csl, isl, cpe, options?)`** | **Extended**. New options: **`includeSignalAndAAL`**, **`signal`**, **`aalReason`**, **`removalPlan`** to include ISL Signal and AAL sections. |
 
 ---
 

@@ -732,7 +732,12 @@ import {
   formatISLSignalForAudit,
   formatAALForAudit,
   formatCPEForAudit,
-  formatPipelineAudit
+  formatPipelineAudit,
+  formatPipelineAuditFull,
+  formatPipelineAuditAsJson,
+  createAuditRunId,
+  buildAuditLogEntry,
+  buildFullAuditPayload
 } from '@ai-pip/core'
 import type { AgentPolicy } from '@ai-pip/core'
 
@@ -757,12 +762,32 @@ console.log(formatISLSignalForAudit(islSignal))
 console.log(formatAALForAudit(reason, removalPlan))
 console.log(formatCPEForAudit(cpeResult))
 
-// Full pipeline audit report
+// Full pipeline audit report (CSL → ISL → CPE)
 const fullAudit = formatPipelineAudit(cslResult, islResult, cpeResult, {
   title: 'AI-PIP Pipeline Audit',
   sectionSeparator: '\n\n'
 })
 console.log(fullAudit)
+
+// Full pipeline with run id and Signal + AAL (CSL → ISL → Signal → AAL → optional CPE)
+const runId = createAuditRunId()
+const generatedAt = Date.now()
+const fullReport = formatPipelineAuditFull(cslResult, islResult, islSignal, reason, removalPlan, cpeResult, {
+  runId,
+  generatedAt,
+  includeCpe: true,
+  title: 'AI-PIP Pipeline Audit (full)'
+})
+console.log(fullReport)
+
+// JSON for logs / SIEM / machine consumption
+const payload = buildFullAuditPayload(cslResult, islResult, islSignal, reason, { runId, generatedAt, removalPlan, cpe: cpeResult })
+const jsonReport = formatPipelineAuditAsJson(cslResult, islResult, islSignal, reason, { runId, generatedAt, removalPlan, compact: true })
+logger.info(jsonReport)
+
+// Compact log entry (one line per request)
+const logEntry = buildAuditLogEntry(islSignal, reason, { runId, generatedAt })
+logger.info(JSON.stringify(logEntry))
 ```
 
 **What this example demonstrates:**
@@ -772,9 +797,13 @@ console.log(fullAudit)
 - **`formatISLSignalForAudit(signal)`**: Formats ISL signal (risk score, threats, detections) for audit.
 - **`formatAALForAudit(reason, removalPlan?)`**: Formats AAL decision reason and optional removal plan.
 - **`formatCPEForAudit(result)`**: Formats CPE result (metadata, signature, lineage).
-- **`formatPipelineAudit(csl, isl, cpe, options?)`**: Builds a single full pipeline audit string.
+- **`formatPipelineAudit(csl, isl, cpe, options?)`**: Builds a single full pipeline audit string (CSL → ISL → CPE). Use **`options.includeSignalAndAAL`** with **`options.signal`** and **`options.aalReason`** to include ISL Signal and AAL sections.
+- **`formatPipelineAuditFull(csl, isl, signal, aalReason, removalPlan?, cpe?, options?)`**: Full pipeline report (CSL → ISL → Signal → AAL → optional CPE) with **run id** and **generated at** timestamp; lineage in each section.
+- **Run identifier**: **`createAuditRunId()`** generates a unique run id; pass **`options.runId`** and **`options.generatedAt`** to formatters for correlation across reports and logs.
+- **JSON variant**: **`buildFullAuditPayload(csl, isl, signal, reason, options?)`** returns a JSON-serializable object (runId, generatedAt, summary, sections with lineage). **`formatPipelineAuditAsJson(...)`** returns the JSON string; use **`options.compact: true`** for one-line output (logs, SIEM).
+- **Audit for logs**: **`buildAuditLogEntry(signal, reason, options?)`** returns a compact summary (`runId`, `generatedAtIso`, `action`, `riskScore`, `hasThreats`, `detectionCount`) for one-line logging (e.g. `logger.info(JSON.stringify(entry))`).
 
-All formatters accept minimal shapes (layer-agnostic) so you can pass any compatible object. Output is ordered and consistent for compliance and debugging.
+All formatters accept minimal shapes (layer-agnostic) so you can pass any compatible object. Output is ordered and consistent for compliance and debugging. Lineage is preserved in every section for traceability.
 
 <a id="use-cases"></a>
 ### Use cases
@@ -785,7 +814,7 @@ Typical scenarios where AI-PIP core is used:
 |----------|-----------------|------|
 | **Secure user chat** | CSL → ISL → CPE | Segment UI input, sanitize, wrap in envelope before sending to the model. |
 | **Policy-based moderation** | CSL → ISL → emitSignal → AAL | Get risk signal from ISL, resolve ALLOW/WARN/BLOCK; use `buildRemovalPlanFromResult` + `applyRemovalPlan` to get cleaned content for the LLM. |
-| **Audit and compliance** | Shared audit formatters | Pretty-print CSL/ISL/AAL/CPE results and full pipeline for logs and reports. |
+| **Audit and compliance** | Shared audit formatters | Pretty-print CSL/ISL/AAL/CPE results; full pipeline with run id (`formatPipelineAuditFull`); JSON variant (`buildFullAuditPayload`, `formatPipelineAuditAsJson`) for SIEM; compact log entry (`buildAuditLogEntry`) for one-line logging. |
 | **DOM / scraped content** | CSL (source: DOM) → ISL → CPE | Treat web content as untrusted (UC), apply aggressive sanitization. |
 | **System instructions** | CSL (source: SYSTEM) → ISL → CPE | Trusted content (TC), minimal sanitization. |
 | **Lineage and forensics** | All layers | Use lineage from results and `filterLineageByStep` / `getLastLineageEntry` for tracing. |
@@ -807,11 +836,27 @@ const cleanedResult = applyRemovalPlan(islResult, planFromResult)
 **Example: audit report**
 
 ```typescript
+// Text report (CSL → ISL → CPE)
 const report = formatPipelineAudit(cslResult, islResult, cpeResult, {
   title: 'Request Audit',
   sectionSeparator: '\n---\n'
 })
 logger.info(report)
+
+// Full report with run id and Signal + AAL
+const runId = createAuditRunId()
+const fullReport = formatPipelineAuditFull(cslResult, islResult, signal, reason, removalPlan, cpeResult, {
+  runId, generatedAt: Date.now(), includeCpe: true
+})
+logger.info(fullReport)
+
+// JSON for SIEM / machine consumption
+const jsonReport = formatPipelineAuditAsJson(cslResult, islResult, signal, reason, { runId, generatedAt: Date.now(), removalPlan, compact: true })
+logger.info(jsonReport)
+
+// One-line log entry per request
+const logEntry = buildAuditLogEntry(signal, reason, { runId, generatedAt: Date.now() })
+logger.info(JSON.stringify(logEntry))
 ```
 
 <a id="documentation"></a>

@@ -21,7 +21,12 @@ export {
   formatISLSignalForAudit,
   formatAALForAudit,
   formatCPEForAudit,
-  formatPipelineAudit
+  formatPipelineAudit,
+  formatPipelineAuditFull,
+  formatPipelineAuditAsJson,
+  createAuditRunId,
+  buildAuditLogEntry,
+  buildFullAuditPayload
 } from './audit.js'
 
 export type {
@@ -31,7 +36,11 @@ export type {
   ISLSignalLike,
   DecisionReasonLike,
   RemovalPlanLike,
-  CPEResultLike
+  CPEResultLike,
+  AuditRunInfo,
+  AuditLogSummary,
+  FullPipelineAuditOptions,
+  PipelineAuditJsonOptions
 } from './audit.js'
 
 export type {

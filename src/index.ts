@@ -110,7 +110,12 @@ export {
   formatISLSignalForAudit,
   formatAALForAudit,
   formatCPEForAudit,
-  formatPipelineAudit
+  formatPipelineAudit,
+  formatPipelineAuditFull,
+  formatPipelineAuditAsJson,
+  createAuditRunId,
+  buildAuditLogEntry,
+  buildFullAuditPayload
 } from './shared/index.js'
 export type {
   LineageEntryLike,
@@ -119,7 +124,11 @@ export type {
   ISLSignalLike,
   DecisionReasonLike,
   RemovalPlanLike,
-  CPEResultLike
+  CPEResultLike,
+  AuditRunInfo,
+  AuditLogSummary,
+  FullPipelineAuditOptions,
+  PipelineAuditJsonOptions
 } from './shared/index.js'
 
 // Re-export CPE

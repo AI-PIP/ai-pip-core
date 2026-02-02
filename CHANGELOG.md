@@ -46,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AAL – Colors for UI/audit**
   - `ACTION_DISPLAY_COLORS` and `getActionDisplayColor(action)` for ALLOW/WARN/BLOCK.
 
+- **Shared – Audit improvements (run id, JSON, logs, full pipeline)**
+  - **Run identifier**: `createAuditRunId()` generates a unique run id; full-pipeline formatters accept `options.runId` and `options.generatedAt` for correlation across reports and logs.
+  - **Full pipeline audit**: `formatPipelineAuditFull(csl, isl, signal, aalReason, removalPlan?, cpe?, options?)` builds a single report (CSL → ISL → Signal → AAL → optional CPE) with run id and generated-at timestamp; lineage preserved in each section.
+  - **formatPipelineAudit** extended: `options.includeSignalAndAAL`, `options.signal`, `options.aalReason`, `options.removalPlan` to include ISL Signal and AAL sections in the pipeline report.
+  - **JSON variant**: `buildFullAuditPayload(csl, isl, signal, reason, options?)` returns a JSON-serializable object (runId, generatedAt, summary, sections with lineage). `formatPipelineAuditAsJson(...)` returns the JSON string; `options.compact: true` for one-line output (logs, SIEM).
+  - **Audit for logs**: `buildAuditLogEntry(signal, reason, options?)` returns a compact summary (runId, generatedAtIso, action, riskScore, hasThreats, detectionCount) for one-line logging.
+  - Types: `AuditRunInfo`, `AuditLogSummary`, `FullPipelineAuditOptions`, `PipelineAuditJsonOptions`.
+
 ### 🔄 Changed
 
 - **sanitize (ISL)**: optional second argument `SanitizeOptions`; uses `detectThreats` per segment and assigns `piDetection` when detections exist; option `detectThreatsOptions` for patterns or limits.
@@ -55,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 📚 Documentation
 
 - **FEATURE.md**: per-version detail of new and modified features; table of methods/APIs changed in 0.3.0 with description of each change.
+- **README.md**: audit section updated with run id, full pipeline (formatPipelineAuditFull), JSON variant (buildFullAuditPayload, formatPipelineAuditAsJson), and audit for logs (buildAuditLogEntry); examples for full report and compact log entry.
 
 ### 📎 More information
 
