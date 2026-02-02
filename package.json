@@ -1,6 +1,6 @@
 {
   "name": "@ai-pip/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, AAL, CPE)",
   "type": "module",
   "main": "./dist/index.js",
