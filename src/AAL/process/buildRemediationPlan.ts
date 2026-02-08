@@ -12,6 +12,7 @@ import type { RemediationPlan } from '../types.js'
 import type { AgentPolicy } from '../types.js'
 import type { ISLResult } from '../../isl/types.js'
 import type { PiDetection } from '../../isl/value-objects/PiDetection.js'
+import { validateAgentPolicyThresholds } from './validatePolicy.js'
 
 const STRATEGY_AI_CLEANUP = 'AI_CLEANUP'
 
@@ -49,6 +50,7 @@ function assertBuildRemediationPlanArgs(islResult: ISLResult, policy: AgentPolic
   if (r == null || typeof r !== 'object' || typeof r.enabled !== 'boolean') {
     throw new TypeError('AAL buildRemediationPlan: policy.remediation.enabled must be a boolean')
   }
+  validateAgentPolicyThresholds(policy)
 }
 
 /**

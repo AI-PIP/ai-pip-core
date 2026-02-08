@@ -12,7 +12,8 @@
  * to wrap (after ISL or after AAL). Serialization and verification belong in the SDK.
  *
  * @param islResult - Pipeline result with segments (e.g. ISLResult); must have at least one segment
- * @param secretKey - Secret key for HMAC (must not be logged or serialized)
+ * @param secretKey - Secret key for HMAC. Must not be logged, serialized, or exposed. Key rotation
+ *   and secure storage are the SDK's responsibility (e.g. key id in metadata, multiple keys in verifier).
  * @returns CPEResult with envelope and optional processingTimeMs
  * @throws {EnvelopeError} If input is invalid or generation fails
  */

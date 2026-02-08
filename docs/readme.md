@@ -58,12 +58,12 @@ The AI-PIP protocol is composed of the following layers with clear separation of
 
 ### ✅ Implemented Layers
 
-- **CSL (Context Segmentation Layer)**: Segments and classifies content according to its origin
+- **CSL (Context Segmentation Layer)**: Segments and classifies content according to its origin. **Trust contract:** The **`source`** (UI, DOM, API, SYSTEM) **must be set only by trusted code** (backend/SDK), **never** from user input; otherwise an attacker could send `source: 'SYSTEM'` and lower sanitization.
 - **ISL (Instruction Sanitization Layer)**: Detects malicious patterns (`detectThreats`, ~287 default patterns), scores risk (configurable strategies), and sanitizes content. Each segment may carry `piDetection` (`PiDetectionResult`). Optional `SanitizeOptions.detectThreatsOptions` for custom patterns or limits. Emits signals (ISLSignal) for other layers to consume.
 - **AAL (Agent Action Lock)**: Hybrid layer that consumes ISL signals and applies configurable policies (ALLOW/WARN/BLOCK). Core-defined contract, SDK-implemented.
 ### 🔧 Shared (transversal)
 
-- **CPE (Cryptographic Prompt Envelope) – transversal**: CPE is **not** a sequential processing layer like CSL → ISL → AAL. It is a **transversal** capability whose role is to **ensure the integrity of each layer** for greater security: a cryptographic envelope (nonce, metadata, HMAC-SHA256 signature) that wraps the output of the pipeline so that the result of each layer can be verified and tampering detected. You call `envelope(islResult, secretKey)` (or wrap AAL output) to get a `CPEResult`. Implementation lives in **`shared/envelope`**; the subpath **`@ai-pip/core/cpe`** is kept for backward compatibility and points to the same module.
+- **CPE (Cryptographic Prompt Envelope) – transversal**: CPE is **not** a sequential processing layer like CSL → ISL → AAL. It is a **transversal** capability whose role is to **ensure the integrity of each layer** for greater security: a cryptographic envelope (nonce, metadata, HMAC-SHA256 signature) that wraps the output of the pipeline so that the result of each layer can be verified and tampering detected. You call `envelope(islResult, secretKey)` (or wrap AAL output) to get a `CPEResult`. Implementation lives in **`shared/envelope`**; the subpath **`@ai-pip/core/cpe`** is kept for backward compatibility and points to the same module. **Secret key:** The key **must not be logged or serialized**; key rotation and secure storage are the **SDK’s responsibility**.
 
 ### 🔧 Shared Features
 

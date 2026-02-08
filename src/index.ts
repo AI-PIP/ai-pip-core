@@ -151,6 +151,7 @@ export {
     resolveAgentActionWithScore,
     buildDecisionReason,
     buildRemediationPlan,
+    validateAgentPolicyThresholds,
     buildAALLineage,
     ACTION_DISPLAY_COLORS,
     getActionDisplayColor

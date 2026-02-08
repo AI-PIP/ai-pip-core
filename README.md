@@ -31,6 +31,10 @@ AI-powered browsers and chat interfaces (e.g. **GPT Atlas**, embedded AI in web 
 
 The processing pipeline is **CSL → ISL** (optionally **AAL** consumes the signal). **CPE** is not a step in that sequence—it is a transversal capability that can wrap the result at any point to guarantee integrity. Layers communicate via **signals**, not internal results, so that each layer stays independent and testable.
 
+**Trust and security (contract):**
+- **`source`** (UI, DOM, API, SYSTEM) determines trust level and sanitization. It **must be set only by trusted code** (backend/SDK), **never** derived from user input. Otherwise an attacker could send `source: 'SYSTEM'` and reduce sanitization.
+- **CPE secret key**: The key passed to `envelope(..., secretKey)` **must not be logged or serialized**. Key rotation and storage are the **SDK’s responsibility** (e.g. use a key id in metadata and multiple keys in the verifier).
+
 ---
 
 ## Installation

@@ -43,7 +43,8 @@ export {
     resolveAgentAction,
     resolveAgentActionWithScore,
     buildDecisionReason,
-    buildRemediationPlan
+    buildRemediationPlan,
+    validateAgentPolicyThresholds
 } from './process/index.js'
 
 export type { DecisionReason } from './process/index.js'

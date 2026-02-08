@@ -6,3 +6,4 @@ export { resolveAgentAction, resolveAgentActionWithScore } from './resolveAgentA
 export { buildDecisionReason } from './buildDecisionReason.js'
 export type { DecisionReason } from './buildDecisionReason.js'
 export { buildRemediationPlan } from './buildRemediationPlan.js'
+export { validateAgentPolicyThresholds } from './validatePolicy.js'

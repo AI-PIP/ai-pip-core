@@ -14,19 +14,7 @@
 import type { ISLSignal } from '../../isl/signals.js'
 import type { AgentPolicy, AnomalyAction } from '../types.js'
 import { createAnomalyScore } from '../value-objects/AnomalyScore.js'
-
-function assertAgentPolicy(policy: AgentPolicy): void {
-  if (policy == null || typeof policy !== 'object') {
-    throw new TypeError('AAL resolveAgentAction: policy must be a non-null object')
-  }
-  const t = policy.thresholds
-  if (t == null || typeof t !== 'object') {
-    throw new TypeError('AAL resolveAgentAction: policy.thresholds must be defined')
-  }
-  if (typeof t.warn !== 'number' || typeof t.block !== 'number') {
-    throw new TypeError('AAL resolveAgentAction: policy.thresholds.warn and block must be numbers')
-  }
-}
+import { validateAgentPolicyThresholds } from './validatePolicy.js'
 
 function assertISLSignal(signal: ISLSignal): void {
   if (signal == null || typeof signal !== 'object') {
@@ -49,7 +37,7 @@ export function resolveAgentAction(
   policy: AgentPolicy
 ): AnomalyAction {
   assertISLSignal(islSignal)
-  assertAgentPolicy(policy)
+  validateAgentPolicyThresholds(policy)
   const riskScore = islSignal.riskScore
 
   // Evaluate policy thresholds
@@ -76,7 +64,7 @@ export function resolveAgentActionWithScore(
   policy: AgentPolicy
 ) {
   assertISLSignal(islSignal)
-  assertAgentPolicy(policy)
+  validateAgentPolicyThresholds(policy)
   const action = resolveAgentAction(islSignal, policy)
   return createAnomalyScore(islSignal.riskScore, action)
 }

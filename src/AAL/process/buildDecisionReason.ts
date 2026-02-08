@@ -14,6 +14,7 @@
 import type { AnomalyAction } from '../types.js'
 import type { ISLSignal } from '../../isl/signals.js'
 import type { AgentPolicy } from '../types.js'
+import { validateAgentPolicyThresholds } from './validatePolicy.js'
 
 /**
  * Reason for an AAL decision
@@ -46,10 +47,7 @@ function assertBuildDecisionReasonArgs(
   if (policy == null || typeof policy !== 'object') {
     throw new TypeError('AAL buildDecisionReason: policy must be a non-null object')
   }
-  const t = policy.thresholds
-  if (t == null || typeof t !== 'object' || typeof t.warn !== 'number' || typeof t.block !== 'number') {
-    throw new TypeError('AAL buildDecisionReason: policy.thresholds.warn and block must be numbers')
-  }
+  validateAgentPolicyThresholds(policy)
 }
 
 /**
