@@ -11,6 +11,7 @@
 import type { RemediationPlan } from '../types.js'
 import type { AgentPolicy } from '../types.js'
 import type { ISLResult } from '../../isl/types.js'
+import type { PiDetection } from '../../isl/value-objects/PiDetection.js'
 
 const STRATEGY_AI_CLEANUP = 'AI_CLEANUP'
 
@@ -75,8 +76,8 @@ export function buildRemediationPlan(
     const detections = segment.piDetection?.detections
     if (!Array.isArray(detections) || detections.length === 0) continue
     targetSegments.push(segment.id)
-    for (const d of detections) {
-      const type = d.pattern_type ?? 'unknown'
+    for (const d of detections as readonly PiDetection[]) {
+      const type: string = d.pattern_type ?? 'unknown'
       goalsSet.add(patternTypeToGoal(type))
     }
   }
