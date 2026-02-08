@@ -4,7 +4,7 @@ Summary of **new features** and **modified features** per version (aligned with 
 
 ---
 
-## [0.3.0] – (next / unreleased)
+## [0.3.0] – 2026-01-08
 
 ### New
 
