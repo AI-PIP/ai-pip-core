@@ -4,6 +4,52 @@ Summary of **new features** and **modified features** per version (aligned with 
 
 ---
 
+## [0.4.0] – (unreleased)
+
+### New
+
+- **AAL – Remediation plan (what to clean; SDK/AI performs cleanup)**  
+  - **RemediationPlan**: `strategy` (e.g. `'AI_CLEANUP'`), `goals: string[]`, `constraints: string[]`, `targetSegments: string[]` (segment IDs with detections), `needsRemediation: boolean`.  
+  - **`buildRemediationPlan(islResult, policy)`**: builds the plan from ISL result and policy; when `policy.remediation.enabled` and there are segments with detections, populates targetSegments and goals derived from detection types (e.g. `prompt-injection` → `remove_prompt_injection`).  
+  - Policy: **`remediation: { enabled: boolean }`** (replaces `removal`).  
+  - AAL describes *what* to do (goals, constraints, target segments); the SDK or an AI tool implements *how* to clean.
+
+- **Shared – Audit with remediation plan**  
+  - **RemediationPlanLike**: shared type for audit (same shape as RemediationPlan).  
+  - `formatPipelineAuditFull(..., remediationPlan?, cpe?, options?)`, `buildFullAuditPayload`, `formatPipelineAuditAsJson`: accept **`options.remediationPlan`** (replacing removal plan).  
+  - `formatAALForAudit(reason, remediationPlan?)`: AAL section includes remediation plan when provided.
+
+- **CPE – Transversal (documented and clarified)**  
+  - CPE (Cryptographic Prompt Envelope) is **transversal**: it **ensures the integrity of each layer** for greater security. It is not a sequential processing layer but a **shared capability** that wraps pipeline output (e.g. ISL or AAL result) with a cryptographic envelope (nonce, metadata, HMAC-SHA256), so that the result of each layer can be verified and tampering detected.  
+  - Implementation lives in **`shared/envelope`**; the package exports it as **`@ai-pip/core/cpe`** for backward compatibility.  
+  - Use **`envelope(islResult, secretKey)`** (or wrap AAL output) to get a `CPEResult`.
+
+### Removed (in 0.4.0)
+
+- **AAL**: `buildRemovalPlan`, `buildRemovalPlanFromResult`, `applyRemovalPlan`, **RemovalPlan**, **RemovedInstruction**. Remediation is produced as a plan only; actual cleanup is done in the SDK (e.g. via an AI cleanup tool).
+
+### Modified
+
+- **AgentPolicy**: `removal` → **`remediation: { enabled: boolean }`**.  
+- **Audit**: All full-pipeline formatters and JSON payload use **remediationPlan** / **RemediationPlanLike** instead of removal plan.
+
+### Methods changed (0.4.0)
+
+| Method / API | What changed |
+|--------------|--------------|
+| **`buildRemediationPlan(islResult, policy)`** | **New**. Returns **RemediationPlan** (strategy, goals, constraints, targetSegments, needsRemediation). Replaces removal-plan builders. |
+| **RemediationPlan** (type) | **New**. Replaces RemovalPlan. No `instructionsToRemove`; use targetSegments + goals/constraints for SDK cleanup. |
+| **RemediationPlanLike** (shared) | **New**. Audit-friendly shape; replaces RemovalPlanLike. |
+| **AgentPolicy.remediation** | **New**. Replaces **`removal`**. `remediation: { enabled: boolean }`. |
+| **formatPipelineAuditFull(..., remediationPlan?, ...)** | Fifth argument is **remediationPlan** (was removalPlan). |
+| **buildFullAuditPayload / formatPipelineAuditAsJson** | **options.remediationPlan** (replaces removalPlan). |
+| **formatAALForAudit(reason, remediationPlan?)** | Second argument is **remediationPlan** (was removalPlan). |
+| **buildRemovalPlan**, **buildRemovalPlanFromResult**, **applyRemovalPlan** | **Removed**. Use **buildRemediationPlan** and SDK cleanup. |
+| **RemovalPlan**, **RemovedInstruction** | **Removed**. Use **RemediationPlan**. |
+| **CPE (Envelope)** | **Clarified**. CPE is **transversal**: it **ensures the integrity of each layer** for greater security (shared capability; implementation in `shared/envelope`; export `@ai-pip/core/cpe`). Not a sequential layer; use `envelope(islResult, secretKey)` to wrap any pipeline result for verification. |
+
+---
+
 ## [0.3.0] – 2026-01-08
 
 ### New
@@ -34,12 +80,10 @@ Summary of **new features** and **modified features** per version (aligned with 
   - `createISLSignal(..., metadata?)` accepts optional metadata.  
   - Strategy used is reflected on the signal (auditability).
 
-- **AAL – Removal plan with real instructions**  
+- **AAL – Removal plan with real instructions** *(removed in 0.4.0; replaced by RemediationPlan and buildRemediationPlan)*  
   - `RemovedInstruction.segmentId?`: optional segment id when plan is built from ISLResult (for applyRemovalPlan).  
-  - `buildRemovalPlanFromResult(islResult, policy)`: builds RemovalPlan from ISL result with `segmentId` per instruction (actionable).  
-  - `applyRemovalPlan(islResult, plan)`: pure function that removes malicious ranges from each segment’s `sanitizedContent`; clamps ranges to content; merges overlapping and adjacent ranges (gap only punctuation/whitespace); returns new ISLResult (original preserved for audit).  
-  - `buildRemovalPlan(islSignal, policy)` kept for signal-only use (no segmentId; descriptive).  
-  - Guards in `resolveAgentAction`, `resolveAgentActionWithScore`, `buildDecisionReason`, `buildRemovalPlan`, `buildRemovalPlanFromResult` for safe PiDetection/signal handling.
+  - `buildRemovalPlanFromResult(islResult, policy)`, `applyRemovalPlan(islResult, plan)`, `buildRemovalPlan(islSignal, policy)`.  
+  - In **0.4.0** these were removed; AAL now produces a **remediation plan** (goals, constraints, targetSegments) and the SDK performs cleanup.
 
 - **AAL – Resolve action with score**  
   - `resolveAgentActionWithScore(islSignal, policy)`: returns `{ action, anomalyScore }` for SDK/audit use.

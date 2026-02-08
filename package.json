@@ -1,6 +1,6 @@
 {
   "name": "@ai-pip/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, AAL, CPE)",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,9 +27,9 @@
       "default": "./dist/AAL/index.js"
     },
     "./cpe": {
-      "types": "./dist/cpe/index.d.ts",
-      "import": "./dist/cpe/index.js",
-      "default": "./dist/cpe/index.js"
+      "types": "./dist/shared/envelope/index.d.ts",
+      "import": "./dist/shared/envelope/index.js",
+      "default": "./dist/shared/envelope/index.js"
     },
     "./shared": {
       "types": "./dist/shared/index.d.ts",
@@ -57,6 +57,7 @@
     "demo-menu": "node scripts/interactive-risk-menu.mjs",
     "demo-full": "node scripts/demo-full-flow.mjs",
     "audit-report": "node scripts/audit-report.mjs",
+    "scan-removal": "node scripts/scan-removal.mjs",
     "prepublishOnly": "pnpm build && pnpm lint && pnpm test --run && pnpm test:install"
   },
   "engines": {

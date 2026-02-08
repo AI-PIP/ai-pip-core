@@ -1,6 +1,4 @@
 import type { RiskScore } from '../isl/value-objects/RiskScore.js'
-import type { Position } from "../shared/types.js"
-
 
 /**
  * AnomalyAction
@@ -47,43 +45,23 @@ export type ProtectedRole = string
 export type ImmutableInstruction = string
 
 /**
- * RemovedInstruction
+ * RemediationPlan
  *
- * Describes an instruction that was identified as malicious
- * and marked for removal by the Agent Action Lock (AAL).
- *
- * @remarks
- * When built from ISLResult (buildRemovalPlanFromResult), segmentId is set
- * so applyRemovalPlan can remove the range from the correct segment.
- * When built from ISLSignal only, segmentId is absent (plan is descriptive only).
+ * Describes *what* to do for remediation, not *how*. The SDK (or an AI agent) is
+ * responsible for executing cleanup. AAL produces goals, constraints, and
+ * target segment IDs so the consumer can run AI_CLEANUP or another strategy.
  */
-export interface RemovedInstruction {
-  /**
-   * The classified threat category that triggered the removal.
-   * Matches ISL pattern_type (e.g. prompt-injection, jailbreak, role_hijacking).
-   */
-  readonly type: string
-
-  /**
-   * The detected pattern or signature that matched the threat.
-   */
-  readonly pattern: string
-
-  /**
-   * The exact position of the instruction within the segment (start inclusive, end exclusive).
-   */
-  readonly position: Position
-
-  /**
-   * Human-readable explanation of why the instruction was removed.
-   */
-  readonly description: string
-
-  /**
-   * Segment id (from ISLSegment.id) when plan is built from ISLResult.
-   * Required for applyRemovalPlan to target the correct segment.
-   */
-  readonly segmentId?: string
+export interface RemediationPlan {
+  /** Strategy identifier for the consumer (e.g. 'AI_CLEANUP'). */
+  readonly strategy: string
+  /** Goals to achieve (e.g. remove_prompt_injection, remove_role_hijacking). */
+  readonly goals: readonly string[]
+  /** Constraints the remediation must respect (e.g. preserve_user_intent). */
+  readonly constraints: readonly string[]
+  /** Segment IDs that need remediation (segments with detections). */
+  readonly targetSegments: readonly string[]
+  /** Whether remediation is needed (has threats and remediation enabled). */
+  readonly needsRemediation: boolean
 }
 
 /**
@@ -111,10 +89,10 @@ export interface AgentPolicy {
   },
 
    /**
-   * Whether malicious instructions should be removed
-   * before reaching the LLM.
+   * Whether to produce a remediation plan when threats are present.
+   * The SDK (or AI agent) performs the actual cleanup using the plan.
    */
-  removal: {
+  remediation: {
     enabled: boolean;
   },
   

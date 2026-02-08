@@ -13,7 +13,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
-      include: ['src/csl/**/*.ts', 'src/isl/**/*.ts', 'src/AAL/**/*.ts', 'src/cpe/**/*.ts', 'src/shared/**/*.ts'],
+      include: ['src/csl/**/*.ts', 'src/isl/**/*.ts', 'src/AAL/**/*.ts', 'src/shared/**/*.ts'],
       exclude: ['src/**/*.d.ts', 'src/**/index.ts', 'src/**/types.ts'],
       thresholds: {
         statements: 90,

@@ -1,5 +1,5 @@
 /**
- * EnvelopeError - Error al generar el envelope criptográfico
+ * EnvelopeError – raised when envelope generation or validation fails.
  */
 export class EnvelopeError extends Error {
   constructor(message: string, public readonly cause?: Error) {
@@ -8,4 +8,3 @@ export class EnvelopeError extends Error {
     Object.setPrototypeOf(this, EnvelopeError.prototype)
   }
 }
-

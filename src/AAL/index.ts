@@ -11,7 +11,7 @@
  * **Architecture:**
  * - Consumes ISLSignal (not ISLResult) to maintain layer separation
  * - Applies configurable policies (ALLOW/WARN/BLOCK)
- * - Builds instruction removal plans
+ * - Builds remediation plans (what to do, not how; SDK/AI agent performs cleanup)
  * - Does not execute actions (that is SDK responsibility)
  * 
  * **Does NOT contain:**
@@ -43,15 +43,10 @@ export {
     resolveAgentAction,
     resolveAgentActionWithScore,
     buildDecisionReason,
-    buildRemovalPlan,
-    buildRemovalPlanFromResult,
-    applyRemovalPlan
+    buildRemediationPlan
 } from './process/index.js'
 
-export type {
-    DecisionReason,
-    RemovalPlan
-} from './process/index.js'
+export type { DecisionReason } from './process/index.js'
 
 // Lineage
 export { buildAALLineage } from './lineage/index.js'
@@ -62,7 +57,7 @@ export { ACTION_DISPLAY_COLORS, getActionDisplayColor } from './constants.js'
 // Types
 export type {
     AnomalyAction,
-    RemovedInstruction,
+    RemediationPlan,
     BlockedIntent,
     SensitiveScope,
     ProtectedRole,

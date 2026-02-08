@@ -1,22 +1,22 @@
 /**
- * Nonce - Valor único para prevenir ataques de replay
- * Value Object puro e inmutable
+ * Nonce – unique value for replay prevention. Immutable value object.
+ *
+ * @remarks
+ * Used by the envelope to bind each wrapped result to a unique value;
+ * verification layer (SDK) should reject duplicate nonces within a time window.
  */
 
 import { randomBytes } from 'node:crypto'
 
-/**
- * Nonce - Valor único generado aleatoriamente
- */
 export type Nonce = {
   readonly value: string
 }
 
 /**
- * Genera un nonce único
- * 
- * @param length - Longitud del nonce en bytes (default: 16)
- * @returns Nonce único
+ * Creates a unique nonce (default 16 bytes, hex-encoded).
+ *
+ * @param length - Length in bytes (8–64)
+ * @returns Frozen Nonce value object
  */
 export function createNonce(length: number = 16): Nonce {
   if (length < 8) {
@@ -29,29 +29,19 @@ export function createNonce(length: number = 16): Nonce {
   const bytes = randomBytes(length)
   const value = bytes.toString('hex')
 
-  return Object.freeze({
-    value,
-  })
+  return Object.freeze({ value })
 }
 
 /**
- * Valida que un string sea un nonce válido
- * 
- * @param value - String a validar
- * @returns true si es un nonce válido
+ * Validates that a string is a valid nonce format (hex, 16–128 chars).
  */
 export function isValidNonce(value: string): boolean {
   return /^[a-f0-9]{16,128}$/i.test(value)
 }
 
 /**
- * Compara dos nonces
- * 
- * @param nonce1 - Primer nonce
- * @param nonce2 - Segundo nonce
- * @returns true si son iguales
+ * Compares two nonces for equality.
  */
 export function equalsNonce(nonce1: Nonce, nonce2: Nonce): boolean {
   return nonce1.value === nonce2.value
 }
-

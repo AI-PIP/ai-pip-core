@@ -19,7 +19,7 @@ import { buildISLResult } from '../dist/isl/index.js'
 
 const policy = Object.freeze({
   thresholds: { warn: 0.3, block: 0.7 },
-  removal: { enabled: true }
+  remediation: { enabled: true }
 })
 
 function buildSignalFromConfidence(confidence) {

@@ -1,47 +1,39 @@
 /**
- * CPEMetadata - Metadata de seguridad del envelope
- * Value Object puro e inmutable
+ * Envelope metadata – security metadata value object (timestamp, nonce, version).
+ *
+ * @remarks
+ * Immutable; validates timestamp (positive, not in the future) and protocol version.
  */
 
 import type { CPEMetadata, ProtocolVersion, Timestamp } from '../types.js'
 import type { Nonce as NonceVO } from './Nonce.js'
 
-/**
- * Versión actual del protocolo
- */
+/** Current protocol version for envelope metadata */
 export const CURRENT_PROTOCOL_VERSION: ProtocolVersion = '0.1.4'
 
 /**
- * Crea metadata de seguridad para el envelope
- * Según especificación: timestamp, nonce, protocolVersion, previousSignatures opcionales
- * 
- * @param timestamp - Timestamp Unix en milisegundos
- * @param nonce - Nonce único
- * @param protocolVersion - Versión del protocolo (default: CURRENT_PROTOCOL_VERSION)
- * @param previousSignatures - Firmas opcionales de capas anteriores (csl, isl)
- * @returns CPEMetadata inmutable
+ * Creates envelope metadata (frozen).
+ *
+ * @param timestamp - Unix timestamp in ms
+ * @param nonce - Nonce value object
+ * @param protocolVersion - Protocol version (default: CURRENT_PROTOCOL_VERSION)
+ * @param previousSignatures - Optional previous layer signatures (csl, isl)
  */
 export function createMetadata(
   timestamp: Timestamp,
   nonce: NonceVO,
   protocolVersion: ProtocolVersion = CURRENT_PROTOCOL_VERSION,
-  previousSignatures?: {
-    csl?: string
-    isl?: string
-  }
+  previousSignatures?: { csl?: string; isl?: string }
 ): CPEMetadata {
-  // Validar timestamp
   if (timestamp <= 0) {
     throw new Error('Timestamp must be a positive number')
   }
 
-  // Validar que no sea del futuro (con margen de 5 minutos para sincronización)
   const maxFutureTimestamp = Date.now() + 5 * 60 * 1000
   if (timestamp > maxFutureTimestamp) {
     throw new Error('Timestamp cannot be in the future')
   }
 
-  // Validar version del protocolo
   if (!protocolVersion || typeof protocolVersion !== 'string') {
     throw new Error('Protocol version must be a non-empty string')
   }
@@ -60,10 +52,7 @@ export function createMetadata(
 }
 
 /**
- * Valida que la metadata sea válida
- * 
- * @param metadata - Metadata a validar
- * @returns true si es válida
+ * Validates metadata shape and values.
  */
 export function isValidMetadata(metadata: CPEMetadata): boolean {
   try {
@@ -75,4 +64,3 @@ export function isValidMetadata(metadata: CPEMetadata): boolean {
     return false
   }
 }
-

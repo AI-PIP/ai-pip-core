@@ -7,7 +7,7 @@
  * You can import from specific layers:
  * - import { segment } from '@ai-pip/core/csl'
  * - import { sanitize } from '@ai-pip/core/isl'
- * - import { envelope } from '@ai-pip/core/cpe'
+ * - import { envelope } from '@ai-pip/core/cpe' (re-exported from shared/envelope)
  * - import { createAnomalyScore  } from '@ai-pip/core/AAL'
  * 
  * Or import everything from the main entry point:
@@ -123,7 +123,7 @@ export type {
   ISLResultLike,
   ISLSignalLike,
   DecisionReasonLike,
-  RemovalPlanLike,
+  RemediationPlanLike,
   CPEResultLike,
   AuditRunInfo,
   AuditLogSummary,
@@ -131,9 +131,9 @@ export type {
   PipelineAuditJsonOptions
 } from './shared/index.js'
 
-// Re-export CPE
-export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isValidMetadata, CURRENT_PROTOCOL_VERSION, createSignature, EnvelopeError } from './cpe/index.js'
-export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './cpe/index.js'
+// Re-export envelope (transversal, from shared – no longer a layer)
+export { envelope, createNonce, isValidNonce, equalsNonce, createMetadata, isValidMetadata, CURRENT_PROTOCOL_VERSION, createSignature, EnvelopeError } from './shared/envelope/index.js'
+export type { Nonce, SignatureVO, ProtocolVersion, Timestamp, NonceValue, SignatureAlgorithm, Signature, CPEMetadata, CPEEvelope, CPEResult } from './shared/envelope/index.js'
 
 
 // Re-export AAL
@@ -150,9 +150,7 @@ export {
     resolveAgentAction,
     resolveAgentActionWithScore,
     buildDecisionReason,
-    buildRemovalPlan,
-    buildRemovalPlanFromResult,
-    applyRemovalPlan,
+    buildRemediationPlan,
     buildAALLineage,
     ACTION_DISPLAY_COLORS,
     getActionDisplayColor
@@ -162,13 +160,12 @@ export {
 export type {
     AnomalyAction,
     AnomalyScore,
-    RemovedInstruction,
+    RemediationPlan,
     BlockedIntent,
     SensitiveScope,
     ProtectedRole,
     ImmutableInstruction,
     AgentPolicy,
     DecisionReason,
-    RemovalPlan
 } from './AAL/index.js'
 

@@ -35,7 +35,7 @@ export type {
   ISLResultLike,
   ISLSignalLike,
   DecisionReasonLike,
-  RemovalPlanLike,
+  RemediationPlanLike,
   CPEResultLike,
   AuditRunInfo,
   AuditLogSummary,

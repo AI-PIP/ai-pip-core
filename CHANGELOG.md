@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - (unreleased)
+
+### ✨ Added
+
+- **AAL – Remediation plan (what to clean, not how)**
+  - `buildRemediationPlan(islResult, policy)`: builds a **RemediationPlan** describing *what* to clean (target segment IDs, goals, constraints). The SDK or an AI tool performs the actual cleanup.
+  - **RemediationPlan**: `strategy: 'AI_CLEANUP'`, `goals: string[]` (e.g. `remove_prompt_injection`, `remove_role_hijacking`), `constraints: string[]` (e.g. `preserve_user_intent`, `do_not_add_information`, `do_not_change_language`), `targetSegments: string[]` (segment IDs with detections), `needsRemediation: boolean`.
+  - Policy: **`remediation: { enabled: boolean }`** (replaces `removal`).
+
+- **Shared – Audit with remediation plan**
+  - **RemediationPlanLike** (shared type) for audit payloads; same shape as RemediationPlan.
+  - `formatPipelineAuditFull(..., remediationPlan?, cpe?, options?)` and `buildFullAuditPayload` / `formatPipelineAuditAsJson` accept **`remediationPlan`** in options (replacing removal plan).
+  - `formatAALForAudit(reason, remediationPlan?)` documents the remediation plan in the AAL section.
+
+- **CPE – Transversal (documented and clarified)**
+  - CPE (Cryptographic Prompt Envelope) is **transversal**: it **ensures the integrity of each layer** for greater security. It is not a sequential processing layer but a shared capability that wraps pipeline output (e.g. ISL or AAL result) with a cryptographic envelope (nonce, metadata, HMAC-SHA256), so that the result of each layer can be verified and tampering detected. Implementation lives in **`shared/envelope`**; the package exports it as **`@ai-pip/core/cpe`** for backward compatibility. Use `envelope(islResult, secretKey)` to wrap any pipeline result.
+
+### 🗑️ Removed
+
+- **AAL – Removal plan and application (moved to SDK)**
+  - **Removed**: `buildRemovalPlan`, `buildRemovalPlanFromResult`, `applyRemovalPlan`, **RemovalPlan**, **RemovedInstruction**.
+  - The core no longer performs instruction removal; it only produces a remediation plan. The SDK (or an AI cleanup tool) uses the plan to clean the content.
+
+### 🔄 Changed
+
+- **AgentPolicy**: `removal: { enabled }` → **`remediation: { enabled }`**.
+- **Audit**: All formatters and payloads use **remediationPlan** / **RemediationPlanLike** instead of removal plan / RemovalPlanLike.
+
+### 📚 Documentation
+
+- **README.md**: Examples and use cases updated to remediation (buildRemediationPlan, RemediationPlan, policy.remediation); audit section uses remediationPlan; SDK responsibility clarified (remediation execution, e.g. AI cleanup). New subsection *CPE as transversal* in Architecture: CPE ensures the **integrity of each layer** for greater security (shared/envelope, export `@ai-pip/core/cpe`); pipeline clarified (CSL → ISL → optional AAL; CPE wraps result for verification).
+- **FEATURE.md**: 0.4.0 section with new APIs, removed APIs, and CPE transversal; tables updated for remediation.
+
+### 📎 More information
+
+See **[FEATURE.md](./FEATURE.md)** for API details.
+
+---
+
 ## [0.3.0] - (unreleased)
 
 ### ✨ Added
@@ -414,6 +453,6 @@ For specific method signatures and API changes in 0.3.0, see **[FEATURE.md](./FE
 
 ---
 
-**Current Version**: 0.1.8  
+**Current Version**: 0.4.0  
 **Status**: Phase 1 - Core Layers (100% completed)
 

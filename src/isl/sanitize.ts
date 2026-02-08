@@ -39,8 +39,8 @@ export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): I
       sanitizationLevel
     )
 
-    // Detect threats (deterministic, bounded; optional custom patterns)
-    const detections = detectThreats(cslSegment.content, detectOptions)
+    // Detect threats on sanitizedContent; positions are segment-local for downstream use (e.g. SDK/AI remediation).
+    const detections = detectThreats(sanitized.content, detectOptions)
     const piDetection =
       detections.length > 0 ? createPiDetectionResult(detections) : undefined
 

@@ -100,15 +100,13 @@ export interface DecisionReasonLike {
   readonly detectionCount: number
 }
 
-/** AAL removal plan shape for audit formatting */
-export interface RemovalPlanLike {
-  readonly shouldRemove: boolean
-  readonly removalEnabled: boolean
-  readonly instructionsToRemove: ReadonlyArray<{
-    readonly type?: string
-    readonly pattern?: string
-    readonly description?: string
-  }>
+/** AAL remediation plan shape for audit formatting */
+export interface RemediationPlanLike {
+  readonly strategy: string
+  readonly goals: readonly string[]
+  readonly constraints: readonly string[]
+  readonly targetSegments: readonly string[]
+  readonly needsRemediation: boolean
 }
 
 /** CPE result shape for audit formatting */
@@ -266,7 +264,7 @@ function buildIslSignalSection(signal: ISLSignalLike): Record<string, unknown> {
   }
 }
 
-function buildAalSection(reason: DecisionReasonLike, removalPlan?: RemovalPlanLike | null): Record<string, unknown> {
+function buildAalSection(reason: DecisionReasonLike, remediationPlan?: RemediationPlanLike | null): Record<string, unknown> {
   const section: Record<string, unknown> = {
     layer: 'AAL',
     action: reason.action,
@@ -276,13 +274,12 @@ function buildAalSection(reason: DecisionReasonLike, removalPlan?: RemovalPlanLi
     hasThreats: reason.hasThreats,
     detectionCount: reason.detectionCount
   }
-  if (removalPlan != null) {
-    section.removalEnabled = removalPlan.removalEnabled
-    section.shouldRemove = removalPlan.shouldRemove
-    section.instructionsToRemove = removalPlan.instructionsToRemove.map((inst) => ({
-      type: inst.type ?? 'unknown',
-      description: inst.description ?? inst.pattern ?? ''
-    }))
+  if (remediationPlan != null) {
+    section.remediationStrategy = remediationPlan.strategy
+    section.remediationGoals = remediationPlan.goals
+    section.remediationConstraints = remediationPlan.constraints
+    section.targetSegments = remediationPlan.targetSegments
+    section.needsRemediation = remediationPlan.needsRemediation
   }
   return section
 }
@@ -310,10 +307,10 @@ export function buildFullAuditPayload(
   isl: ISLResultLike,
   signal: ISLSignalLike,
   reason: DecisionReasonLike,
-  options?: FullPipelineAuditOptions & { removalPlan?: RemovalPlanLike | null; cpe?: CPEResultLike | null }
+  options?: FullPipelineAuditOptions & { remediationPlan?: RemediationPlanLike | null; cpe?: CPEResultLike | null }
 ): Record<string, unknown> {
   const run = ensureRunInfo(options)
-  const removalPlan = options?.removalPlan ?? undefined
+  const remediationPlan = options?.remediationPlan ?? undefined
   const cpe = options?.cpe
   const includeCpe = options?.includeCpe === true && cpe != null
 
@@ -331,7 +328,7 @@ export function buildFullAuditPayload(
       csl: buildCslSection(csl),
       isl: buildIslSection(isl),
       islSignal: buildIslSignalSection(signal),
-      aal: buildAalSection(reason, removalPlan),
+      aal: buildAalSection(reason, remediationPlan),
       ...(includeCpe && cpe && { cpe: buildCpeSection(cpe) })
     }
   }
@@ -472,33 +469,27 @@ export function formatISLSignalForAudit(signal: ISLSignalLike): string {
 }
 
 /**
- * Formats AAL decision reason and optional removal plan for audit
+ * Formats AAL decision reason and optional remediation plan for audit
  *
  * @param reason - Decision reason (or compatible shape)
- * @param removalPlan - Optional removal plan (or compatible shape)
- * @returns Formatted string: what this block is, data origin, action (ALLOW/WARN/BLOCK), reason, thresholds, removal plan
+ * @param remediationPlan - Optional remediation plan (or compatible shape)
+ * @returns Formatted string: action (ALLOW/WARN/BLOCK), reason, thresholds, remediation plan
  */
-export function formatAALForAudit(reason: DecisionReasonLike, removalPlan?: RemovalPlanLike | null): string {
-  const header = 'Agent Action Lock decision. Action (ALLOW/WARN/BLOCK), reason in plain language, thresholds used (warn/block), removal plan (if removal enabled and threats present).'
-  const origin = 'Data from: AAL decision (resolveAgentAction + buildDecisionReason + optional buildRemovalPlan/buildRemovalPlanFromResult).'
+export function formatAALForAudit(reason: DecisionReasonLike, remediationPlan?: RemediationPlanLike | null): string {
+  const header = 'Agent Action Lock decision. Action (ALLOW/WARN/BLOCK), reason in plain language, thresholds used (warn/block), remediation plan (what to do; SDK/AI agent performs cleanup).'
+  const origin = 'Data from: AAL decision (resolveAgentAction + buildDecisionReason + optional buildRemediationPlan).'
   const actionLabel = ACTION_LEGEND[reason.action] ?? reason.action
-  const plan = removalPlan ?? undefined
-  const removalBlock: string[] =
+  const plan = remediationPlan ?? undefined
+  const remediationBlock: string[] =
     plan === undefined
       ? []
       : [
           '',
-          `Removal enabled: ${plan.removalEnabled}`,
-          `Should remove: ${plan.shouldRemove} (if true, applyRemovalPlan can be used to get cleaned content)`,
-          ...(plan.instructionsToRemove.length > 0
-            ? [
-                `Instructions to remove: ${plan.instructionsToRemove.length}`,
-                ...plan.instructionsToRemove.map(
-                  (inst, i) =>
-                    `${SEP}${i + 1}. type=${inst.type ?? 'unknown'} - ${inst.description ?? inst.pattern ?? ''}`
-                )
-              ]
-            : [])
+          `Remediation strategy: ${plan.strategy}`,
+          `Needs remediation: ${plan.needsRemediation}`,
+          `Target segments: ${plan.targetSegments.length} [${plan.targetSegments.slice(0, 5).join(', ')}${plan.targetSegments.length > 5 ? '...' : ''}]`,
+          `Goals: ${plan.goals.join(', ')}`,
+          `Constraints: ${plan.constraints.join(', ')}`
         ]
   const lines = [
     '[AAL] Agent Action Lock',
@@ -509,7 +500,7 @@ export function formatAALForAudit(reason: DecisionReasonLike, removalPlan?: Remo
     `Risk score: ${reason.riskScore.toFixed(3)} (threshold: ${reason.threshold.toFixed(3)})`,
     `Reason: ${reason.reason}`,
     `Threats: ${reason.hasThreats} (detection count: ${reason.detectionCount})`,
-    ...removalBlock
+    ...remediationBlock
   ]
   return lines.join('\n')
 }
@@ -569,7 +560,7 @@ export function formatPipelineAudit(
     includeSignalAndAAL?: boolean
     signal?: ISLSignalLike
     aalReason?: DecisionReasonLike
-    removalPlan?: RemovalPlanLike | null
+    remediationPlan?: RemediationPlanLike | null
   }
 ): string {
   const sep = options?.sectionSeparator ?? '\n\n'
@@ -577,7 +568,7 @@ export function formatPipelineAudit(
   const parts = [title, BORDER, formatCSLForAudit(csl), sep, formatISLForAudit(isl)]
 
   if (options?.includeSignalAndAAL && options.signal != null && options.aalReason != null) {
-    parts.push(sep, formatISLSignalForAudit(options.signal), sep, formatAALForAudit(options.aalReason, options.removalPlan ?? undefined))
+    parts.push(sep, formatISLSignalForAudit(options.signal), sep, formatAALForAudit(options.aalReason, options.remediationPlan ?? undefined))
   }
 
   parts.push(sep, formatCPEForAudit(cpe))
@@ -592,7 +583,7 @@ export function formatPipelineAudit(
  * @param isl - ISL result
  * @param signal - ISL signal (for AAL)
  * @param aalReason - AAL decision reason
- * @param removalPlan - Optional removal plan
+ * @param remediationPlan - Optional remediation plan
  * @param cpe - Optional CPE result (included when includeCpe is true)
  * @param options - runId, generatedAt, includeCpe, title, sectionSeparator
  * @returns Formatted string with header (runId, generatedAt) and all sections
@@ -602,7 +593,7 @@ export function formatPipelineAuditFull(
   isl: ISLResultLike,
   signal: ISLSignalLike,
   aalReason: DecisionReasonLike,
-  removalPlan?: RemovalPlanLike | null,
+  remediationPlan?: RemediationPlanLike | null,
   cpe?: CPEResultLike | null,
   options?: FullPipelineAuditOptions
 ): string {
@@ -628,7 +619,7 @@ export function formatPipelineAuditFull(
     sep,
     formatISLSignalForAudit(signal),
     sep,
-    formatAALForAudit(aalReason, removalPlan ?? undefined)
+    formatAALForAudit(aalReason, remediationPlan ?? undefined)
   ]
 
   if (includeCpe && cpe) {
@@ -650,7 +641,7 @@ export function formatPipelineAuditAsJson(
   isl: ISLResultLike,
   signal: ISLSignalLike,
   reason: DecisionReasonLike,
-  options?: PipelineAuditJsonOptions & { removalPlan?: RemovalPlanLike | null; cpe?: CPEResultLike | null }
+  options?: PipelineAuditJsonOptions & { remediationPlan?: RemediationPlanLike | null; cpe?: CPEResultLike | null }
 ): string {
   const payload = buildFullAuditPayload(csl, isl, signal, reason, options)
   return options?.compact === true ? JSON.stringify(payload) : JSON.stringify(payload, null, 2)
