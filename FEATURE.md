@@ -4,6 +4,42 @@ Summary of **new features** and **modified features** per version (aligned with 
 
 ---
 
+## [0.5.0] – (unreleased)
+
+### New
+
+- **ISL – Semantic isolation and canonical tags**
+  - **ThreatTag**: Structural metadata for semantic isolation: `segmentId`, `startOffset`, `endOffset`, `type` (ThreatTagType), `confidence`. The core does not insert tags into text; the SDK uses this metadata plus the canonical serializer to wrap fragments.
+  - **createThreatTag(segmentId, startOffset, endOffset, type, confidence)**: Creates a frozen ThreatTag with validation (non-empty segmentId, 0 ≤ start ≤ end, valid type, confidence in [0, 1]). Throws `TypeError` or `RangeError` on invalid input.
+  - **Tag registry**: `VALID_TAG_TYPES` (readonly list of valid threat tag types, aligned with ISL detect) and `isValidThreatTagType(value)` (type guard).
+  - **Canonical AI-PIP tag serializer** (`isl/tags/serializer.ts`): Official protocol representation only. It does not apply offsets, does not mutate segments, and does not decide when to encapsulate. The SDK is responsible for applying tags at the correct positions and for resolving multiple/overlapping tags (e.g. by descending offset order).
+    - **openTag(type)**: Returns canonical opening tag string, e.g. `<aipip:prompt-injection>`.
+    - **closeTag(type)**: Returns canonical closing tag string, e.g. `</aipip:prompt-injection>`.
+    - **wrapWithTag(type, content)**: Returns content wrapped with opening and closing tags (pure concatenation).
+  - **Namespace**: `AIPIP_NAMESPACE` (`"aipip"`), `AIPIP_TAG_SCHEMA_VERSION` (1). **ThreatTagType**: Alias for tag context (same as ThreatType from detect); single source of truth remains ISL detect.
+
+### Benefits
+
+- **No semantic corruption**: Core does not modify segment text; it produces metadata and defines the canonical tag format.
+- **Auditable and reversible**: Tag format is deterministic and standardized; encapsulation is applied at fragment level by the SDK.
+- **Clear responsibility**: SDK applies offsets, insertions, and ordering; the serializer only builds strings, making the tag format part of the formal protocol.
+
+### Methods / API (0.5.0)
+
+| Method / API | Description |
+|--------------|-------------|
+| **ThreatTag** (type) | `segmentId`, `startOffset`, `endOffset`, `type`, `confidence`. Structural metadata for semantic isolation. |
+| **createThreatTag(...)** | Factory; validates and returns frozen ThreatTag. |
+| **VALID_TAG_TYPES** | Readonly list of valid ThreatTagType values. |
+| **isValidThreatTagType(value)** | Type guard for valid tag type. |
+| **openTag(type)** | Canonical opening tag string. |
+| **closeTag(type)** | Canonical closing tag string. |
+| **wrapWithTag(type, content)** | Content wrapped with open + close tags. |
+| **AIPIP_NAMESPACE**, **AIPIP_TAG_SCHEMA_VERSION** | Namespace and schema version for tags. |
+| **ThreatTagType** | Alias for threat type in tag context (aligned with detect). |
+
+---
+
 ## [0.4.0] – (unreleased)
 
 ### New

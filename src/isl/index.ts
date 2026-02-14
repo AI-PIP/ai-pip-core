@@ -84,3 +84,15 @@ export type {
   ISLResult
 } from './types.js'
 
+// Tags – semantic isolation metadata and canonical serializer (v0.5.0)
+export {
+  AIPIP_NAMESPACE,
+  AIPIP_TAG_SCHEMA_VERSION,
+  createThreatTag,
+  VALID_TAG_TYPES,
+  isValidThreatTagType,
+  openTag,
+  closeTag,
+  wrapWithTag
+} from './tags/index.js'
+export type { ThreatTag, ThreatTagType } from './tags/index.js'

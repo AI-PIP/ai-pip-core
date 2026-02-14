@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - (unreleased)
+
+### ✨ Added
+
+- **ISL – Semantic isolation and canonical tags (v0.5.0)**
+  - **ThreatTag**: Structural metadata for semantic isolation: `segmentId`, `startOffset`, `endOffset`, `type` (ThreatTagType), `confidence`. ISL (or SDK) produces ThreatTags; the core does not insert tags into text.
+  - **createThreatTag(segmentId, startOffset, endOffset, type, confidence)**: Factory that validates and returns a frozen ThreatTag. Validates non-empty segmentId, 0 ≤ start ≤ end, valid type, confidence in [0, 1].
+  - **Tag registry**: `VALID_TAG_TYPES` (readonly list aligned with ISL detect taxonomy) and `isValidThreatTagType(value)` for validation.
+  - **Canonical AI-PIP tag serializer** (`isl/tags/serializer.ts`): Official protocol representation only. No offsets, no segment mutation, no encapsulation logic.
+    - **openTag(type)**: Returns canonical opening tag string, e.g. `<aipip:prompt-injection>`.
+    - **closeTag(type)**: Returns canonical closing tag string, e.g. `</aipip:prompt-injection>`.
+    - **wrapWithTag(type, content)**: Returns content wrapped with opening and closing tags (pure string concatenation).
+  - **Namespace**: `AIPIP_NAMESPACE` (`"aipip"`) and `AIPIP_TAG_SCHEMA_VERSION` (1) for forward compatibility.
+  - **ThreatTagType**: Alias for threat type in tag context (aligned with `ThreatType` from detect); single source of truth remains ISL detect.
+
+- **Benefits of semantic isolation**
+  - **No semantic corruption**: Core does not modify segment text; it produces metadata (ThreatTag) and defines the canonical tag format.
+  - **Auditable and reversible**: Tag format is deterministic and standardized; SDK applies tags at fragment level using offsets.
+  - **Clear responsibility**: SDK is responsible for applying offsets, inserting tags at correct positions, resolving multiple/overlapping tags (e.g. by descending offset order). The serializer only builds strings.
+
+### 📚 Documentation
+
+- **README.md**: New subsection *Semantic isolation and canonical tags (v0.5.0)*: ThreatTag, serializer (openTag, closeTag, wrapWithTag), encapsulation at fragment level, SDK responsibilities.
+- **FEATURE.md**: 0.5.0 section with new APIs (ThreatTag, createThreatTag, tag registry, serializer), benefits, and methods table.
+- **docs/readme.md**: Same 0.5.0 content and link from Architecture / ISL.
+
+### 📎 More information
+
+See **[FEATURE.md](./FEATURE.md)** for 0.5.0 API details.
+
+---
+
 ## [0.4.0] - (unreleased)
 
 ### ✨ Added
@@ -453,6 +485,6 @@ For specific method signatures and API changes in 0.3.0, see **[FEATURE.md](./FE
 
 ---
 
-**Current Version**: 0.4.0  
+**Current Version**: 0.5.0  
 **Status**: Phase 1 - Core Layers (100% completed)
 

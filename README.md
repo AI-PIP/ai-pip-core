@@ -25,7 +25,7 @@ AI-powered browsers and chat interfaces (e.g. **GPT Atlas**, embedded AI in web 
 | Layer | Role |
 |-------|------|
 | **CSL** (Context Segmentation Layer) | Segments and classifies content by origin (UI, DOM, API, SYSTEM). |
-| **ISL** (Instruction Sanitization Layer) | Detects threats (~287 patterns), scores risk, sanitizes content, and emits a **signal** (risk score, detections) for other layers. |
+| **ISL** (Instruction Sanitization Layer) | Detects threats (~287 patterns), scores risk, sanitizes content, and emits a **signal** (risk score, detections) for other layers. From **v0.5.0**: produces **ThreatTag** metadata and exposes the **canonical tag serializer** for semantic isolation (encapsulation with `<aipip:threat-type>...</aipip>` is applied by the SDK at fragment level). |
 | **AAL** (Agent Action Lock) | Consumes the ISL signal and applies policy: **ALLOW**, **WARN**, or **BLOCK**. Produces a **remediation plan** (what to clean—target segments, goals, constraints); the SDK or an AI agent performs the actual cleanup. |
 | **CPE** (Cryptographic Prompt Envelope) | **Transversal**: ensures the **integrity of each layer**. Wraps pipeline output with a signed envelope (nonce, metadata, HMAC-SHA256) so that results can be verified. Implemented in `shared/envelope`; exported as `@ai-pip/core/cpe`. |
 
@@ -34,6 +34,8 @@ The processing pipeline is **CSL → ISL** (optionally **AAL** consumes the sign
 **Trust and security (contract):**
 - **`source`** (UI, DOM, API, SYSTEM) determines trust level and sanitization. It **must be set only by trusted code** (backend/SDK), **never** derived from user input. Otherwise an attacker could send `source: 'SYSTEM'` and reduce sanitization.
 - **CPE secret key**: The key passed to `envelope(..., secretKey)` **must not be logged or serialized**. Key rotation and storage are the **SDK’s responsibility** (e.g. use a key id in metadata and multiple keys in the verifier).
+
+**Semantic isolation and canonical tags (v0.5.0):** The core does **not** modify segment text. It produces **ThreatTag** metadata (segmentId, offsets, type, confidence) and defines the **canonical AI-PIP tag format** via the serializer (`openTag`, `closeTag`, `wrapWithTag`). Encapsulation with tags like `<aipip:prompt-injection>...</aipip>` is applied by the **SDK** at fragment level. Benefits: no semantic corruption, auditable and reversible, deterministic; the SDK is responsible for applying offsets, insertions, and ordering (e.g. by descending offset when resolving multiple tags).
 
 ---
 

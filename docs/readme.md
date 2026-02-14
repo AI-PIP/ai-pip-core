@@ -59,7 +59,7 @@ The AI-PIP protocol is composed of the following layers with clear separation of
 ### ✅ Implemented Layers
 
 - **CSL (Context Segmentation Layer)**: Segments and classifies content according to its origin. **Trust contract:** The **`source`** (UI, DOM, API, SYSTEM) **must be set only by trusted code** (backend/SDK), **never** from user input; otherwise an attacker could send `source: 'SYSTEM'` and lower sanitization.
-- **ISL (Instruction Sanitization Layer)**: Detects malicious patterns (`detectThreats`, ~287 default patterns), scores risk (configurable strategies), and sanitizes content. Each segment may carry `piDetection` (`PiDetectionResult`). Optional `SanitizeOptions.detectThreatsOptions` for custom patterns or limits. Emits signals (ISLSignal) for other layers to consume.
+- **ISL (Instruction Sanitization Layer)**: Detects malicious patterns (`detectThreats`, ~287 default patterns), scores risk (configurable strategies), and sanitizes content. Each segment may carry `piDetection` (`PiDetectionResult`). Optional `SanitizeOptions.detectThreatsOptions` for custom patterns or limits. Emits signals (ISLSignal) for other layers to consume. **From v0.5.0**: Produces **ThreatTag** metadata and exposes the **canonical AI-PIP tag serializer** for semantic isolation; encapsulation with `<aipip:threat-type>...</aipip>` is applied by the SDK at fragment level (see [Semantic isolation and canonical tags (v0.5.0)](#semantic-isolation-and-canonical-tags-v050)).
 - **AAL (Agent Action Lock)**: Hybrid layer that consumes ISL signals and applies configurable policies (ALLOW/WARN/BLOCK). Core-defined contract, SDK-implemented.
 ### 🔧 Shared (transversal)
 
@@ -108,6 +108,16 @@ Layer/
 - ✅ Clear separation of responsibilities
 - ✅ Core scales better
 - ✅ Clear separation between internals and semantic contracts
+
+#### Semantic isolation and canonical tags (v0.5.0)
+
+The core does **not** modify segment text. It produces **ThreatTag** metadata (`segmentId`, `startOffset`, `endOffset`, `type`, `confidence`) and defines the **canonical AI-PIP tag format** in `isl/tags/serializer.ts`:
+
+- **openTag(type)** – canonical opening tag, e.g. `<aipip:prompt-injection>`
+- **closeTag(type)** – canonical closing tag, e.g. `</aipip:prompt-injection>`
+- **wrapWithTag(type, content)** – content wrapped with open + close tags (pure string concatenation)
+
+Encapsulation with these tags is applied by the **SDK** at fragment level (using ThreatTag offsets and the canonical format). The serializer does not apply offsets, mutate segments, or decide when to encapsulate; the SDK is responsible for applying offsets, insertions, and ordering (e.g. by descending offset when resolving multiple tags). **Benefits**: no semantic corruption, auditable and reversible, deterministic; the tag format is part of the formal protocol.
 
 #### CPE as transversal (integrity of each layer)
 

@@ -36,6 +36,7 @@ export interface ISLSegment {
 export interface ISLResult {
   readonly segments: readonly ISLSegment[]
   readonly lineage: readonly LineageEntry[]
+  // aipip tags 
   readonly metadata: {
     readonly totalSegments: number
     readonly sanitizedSegments: number
