@@ -7,6 +7,8 @@ import { buildISLResult } from './process/buildISLResult.js'
 import { detectThreats } from './detect/index.js'
 import type { DetectThreatsOptions } from './detect/index.js'
 import { createPiDetectionResult } from './value-objects/PiDetectionResult.js'
+import { type ThreatTag, createThreatTag } from './tags/threat-tag.js'
+import { isValidThreatTagType } from './tags/tag-registry.js'
 
 /** Options for sanitize. Enables flexible threat detection (e.g. custom patterns). */
 export interface SanitizeOptions {
@@ -27,6 +29,7 @@ export interface SanitizeOptions {
 export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): ISLResult {
   const startTime = Date.now()
   const segments: ISLSegment[] = []
+  const threatTags: ThreatTag[] = []
   const detectOptions = options.detectThreatsOptions
 
   for (const cslSegment of cslResult.segments) {
@@ -44,6 +47,8 @@ export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): I
     const piDetection =
       detections.length > 0 ? createPiDetectionResult(detections) : undefined
 
+
+
     // Build ISL lineage for this segment
     const segmentLineage = buildISLLineage(cslSegment.lineage, startTime)
 
@@ -59,6 +64,26 @@ export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): I
     }
 
     segments.push(islSegment)
+    
+    // Build threat tags 
+    if (detections.length > 0) {
+      for (const detection of detections) {
+        if (isValidThreatTagType(detection.pattern_type)) {
+          const tag = createThreatTag(
+            cslSegment.id,
+            detection.position.start,
+            detection.position.end,
+            detection.pattern_type,
+            detection.confidence
+          )
+          threatTags.push(tag)
+        }
+      }
+    }
+
+
+
+
   }
 
   // Build complete lineage
@@ -66,7 +91,11 @@ export function sanitize(cslResult: CSLResult, options: SanitizeOptions = {}): I
 
   // Build result using process function
   const processingTime = Date.now() - startTime
-  return buildISLResult(segments, allLineage, processingTime)
+  
+  
+
+
+  return buildISLResult(segments, allLineage, threatTags, processingTime)
 }
 
 /**

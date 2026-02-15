@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.5.0] - (unreleased)
+## [0.5.0] - (latest)
 
 ### ✨ Added
 
@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **wrapWithTag(type, content)**: Returns content wrapped with opening and closing tags (pure string concatenation).
   - **Namespace**: `AIPIP_NAMESPACE` (`"aipip"`) and `AIPIP_TAG_SCHEMA_VERSION` (1) for forward compatibility.
   - **ThreatTagType**: Alias for threat type in tag context (aligned with `ThreatType` from detect); single source of truth remains ISL detect.
+  - **ISLResult.threatTags**: `readonly ThreatTag[]` — List of threat tags derived from segment detections (only detections with valid `ThreatTagType`). Built in `sanitize()` and passed to `buildISLResult`; SDK uses it with the canonical serializer to apply encapsulation.
+  - **buildISLResult(segments, lineage, threatTags, processingTimeMs?)**: New third parameter **threatTags** (required); `processingTimeMs` is now the fourth optional argument. Callers (e.g. `sanitize`) must pass the array of ThreatTag derived from detections (or `[]` when none).
 
 - **Benefits of semantic isolation**
   - **No semantic corruption**: Core does not modify segment text; it produces metadata (ThreatTag) and defines the canonical tag format.

@@ -111,7 +111,7 @@ Layer/
 
 #### Semantic isolation and canonical tags (v0.5.0)
 
-The core does **not** modify segment text. It produces **ThreatTag** metadata (`segmentId`, `startOffset`, `endOffset`, `type`, `confidence`) and defines the **canonical AI-PIP tag format** in `isl/tags/serializer.ts`:
+The core does **not** modify segment text. It produces **ThreatTag** metadata (`segmentId`, `startOffset`, `endOffset`, `type`, `confidence`) and exposes it as **`ISLResult.threatTags`** (derived from segment detections in `sanitize()`; only detections with valid `ThreatTagType`). The **canonical AI-PIP tag format** is defined in `isl/tags/serializer.ts`:
 
 - **openTag(type)** – canonical opening tag, e.g. `<aipip:prompt-injection>`
 - **closeTag(type)** – canonical closing tag, e.g. `</aipip:prompt-injection>`
@@ -1083,24 +1083,12 @@ For SDK development updates and roadmap, see the [AI-PIP Documentation Repositor
 <a id="changelog"></a>
 ## 📝 CHANGELOG
 
-### [0.1.8] - 2026-01-04
+### [0.5.0] - (latest)
 
-#### 🐛 Critical Fixes - Origin Classification
-- **Fixed source classification mapping**: Corrected deterministic trust level classification for all content sources to align with AI-PIP protocol specification
-- **Updated trust level assignments**: `SYSTEM` → `TC`, `UI` → `STC`, `API` → `STC`, `DOM` → `UC`
-- **Corrected sanitization levels**: Updated to match corrected trust levels (TC → minimal, STC → moderate, UC → aggressive)
-- **Fixed test suite**: Updated all tests to reflect correct classification, ensuring consistency across codebase
-
-#### 📚 Documentation Improvements
-- **Enhanced usage examples**: Added detailed explanations below each code example describing what each script does and how it works
-- **Layer-specific imports documentation**: Updated examples to show real-world usage of layer-specific imports with practical explanations
-- **Official SDK announcement**: Added section explaining that `@ai-pip/core` will be used as the foundation for the official AI-PIP SDK
-- **Improved example clarity**: Each example now includes context about when and why to use specific functions
-- **Updated source classification examples**: All examples now correctly show trust levels and sanitization levels for each source type
-
-**What this fixes**: During documentation review, inconsistencies were discovered between the implementation and AI-PIP protocol specification. This release corrects the deterministic trust level classification, ensuring all sources are properly classified and sanitized according to the protocol. All tests have been updated to reflect the correct behavior.
-
-**What this improves**: Users visiting the package on npmjs can now better understand not just what each function does, but how to use them in real-world scenarios. The examples now provide context about the complete processing pipeline and the purpose of each step, with accurate trust level information.
+#### ✨ ISL – Semantic isolation and canonical tags
+- **ThreatTag** and **ISLResult.threatTags**: Structural metadata for semantic isolation (segmentId, offsets, type, confidence). Built in `sanitize()` from detections with valid ThreatTagType; SDK uses with the canonical serializer for encapsulation.
+- **Canonical tag serializer** (`openTag`, `closeTag`, `wrapWithTag`): Official AI-PIP tag format; no segment mutation in the core. SDK applies tags at fragment level.
+- **buildISLResult(segments, lineage, threatTags, processingTimeMs?)**: New third parameter `threatTags` (required); `processingTimeMs` is now the fourth optional argument.
 
 For complete details and all version history, see [CHANGELOG.md](../CHANGELOG.md).
 
@@ -1111,6 +1099,6 @@ Summary of new and modified features per version (aligned with the changelog): *
 
 ---
 
-**Current Version**: 0.4.0  
-**Status**: Phase 1 - Core Layers (100% completed)  
-**Latest**: AAL remediation plan (what to clean; SDK/AI performs cleanup), CPE transversal (integrity of each layer), audit with RemediationPlan.
+**Current Version**: 0.5.0  
+**Status**: Phase 1 – Core Layers (100% completed). Includes ISL semantic isolation and canonical tags (ThreatTag, serializer).  
+**Latest**: ISL semantic isolation (ThreatTag, ISLResult.threatTags), canonical tag serializer (openTag, closeTag, wrapWithTag), buildISLResult(segments, lineage, threatTags, processingTimeMs?).

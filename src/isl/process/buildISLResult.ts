@@ -13,18 +13,21 @@
 
 import type { ISLResult, ISLSegment } from '../types.js'
 import type { LineageEntry } from '../../csl/value-objects/index.js'
+import type { ThreatTag } from '../tags/threat-tag.js'
 
 /**
  * Builds an ISLResult from processed segments
  * 
  * @param segments - Segments sanitized by ISL
  * @param lineage - Complete processing lineage
+ * @param threatTags - Threat tags detected by ISL
  * @param processingTimeMs - Processing time in milliseconds (optional)
  * @returns ISLResult with all processing information
  */
 export function buildISLResult(
   segments: readonly ISLSegment[],
   lineage: readonly LineageEntry[],
+  threatTags: readonly ThreatTag[],
   processingTimeMs?: number
 ): ISLResult {
   const metadata = processingTimeMs === undefined
@@ -41,6 +44,7 @@ export function buildISLResult(
   return {
     segments: Object.freeze(segments),
     lineage: Object.freeze(lineage),
+    threatTags: Object.freeze(threatTags),
     metadata: Object.freeze(metadata)
   }
 }

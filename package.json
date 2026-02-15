@@ -1,7 +1,7 @@
 {
   "name": "@ai-pip/core",
-  "version": "0.4.0",
-  "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, AAL)",
+  "version": "0.5.0",
+  "description": "Core implementation of the AI-PIP protocol. Provides layered, zero-trust context processing (CSL, ISL, AAL) and transversal integrity (CPE)",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -53,6 +53,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:install": "node test-package-install.js",
+    "test:tags": "node scripts/test-tags-exhaustive.mjs",
     "verify-risk": "node scripts/verify-risk-score.mjs",
     "demo-menu": "node scripts/interactive-risk-menu.mjs",
     "demo-full": "node scripts/demo-full-flow.mjs",

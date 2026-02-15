@@ -4,7 +4,7 @@ Summary of **new features** and **modified features** per version (aligned with 
 
 ---
 
-## [0.5.0] – (unreleased)
+## [0.5.0] – (latest)
 
 ### New
 
@@ -17,6 +17,8 @@ Summary of **new features** and **modified features** per version (aligned with 
     - **closeTag(type)**: Returns canonical closing tag string, e.g. `</aipip:prompt-injection>`.
     - **wrapWithTag(type, content)**: Returns content wrapped with opening and closing tags (pure concatenation).
   - **Namespace**: `AIPIP_NAMESPACE` (`"aipip"`), `AIPIP_TAG_SCHEMA_VERSION` (1). **ThreatTagType**: Alias for tag context (same as ThreatType from detect); single source of truth remains ISL detect.
+  - **ISLResult.threatTags**: `readonly ThreatTag[]` — Derived from segment detections in `sanitize()` (only valid ThreatTagType); SDK uses it with the serializer for encapsulation.
+  - **buildISLResult(segments, lineage, threatTags, processingTimeMs?)**: **threatTags** is the third parameter (required); **processingTimeMs** is the fourth optional parameter.
 
 ### Benefits
 
@@ -37,6 +39,8 @@ Summary of **new features** and **modified features** per version (aligned with 
 | **wrapWithTag(type, content)** | Content wrapped with open + close tags. |
 | **AIPIP_NAMESPACE**, **AIPIP_TAG_SCHEMA_VERSION** | Namespace and schema version for tags. |
 | **ThreatTagType** | Alias for threat type in tag context (aligned with detect). |
+| **ISLResult.threatTags** | `readonly ThreatTag[]`; derived from detections in sanitize; SDK uses for encapsulation. |
+| **buildISLResult(segments, lineage, threatTags, processingTimeMs?)** | New signature: **threatTags** (3rd, required), **processingTimeMs** (4th, optional). |
 
 ---
 

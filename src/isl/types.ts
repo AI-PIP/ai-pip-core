@@ -5,6 +5,7 @@
 // Import types from CSL and value objects
 import type { LineageEntry, TrustLevel } from '../csl/value-objects/index.js'
 import type { PiDetectionResult } from './value-objects/PiDetectionResult.js'
+import type { ThreatTag } from './tags/threat-tag.js' 
 
 // Re-export RiskScore for convenience
 export type { RiskScore } from './value-objects/RiskScore.js'
@@ -32,11 +33,22 @@ export interface ISLSegment {
 
 /**
  * ISLResult - Sanitization result
+ * 
+ * @remarks
+ * The ISLResult contains the following:
+ *  - segments: readonly ISLSegment[]
+ *  - lineage: readonly LineageEntry[]
+ *  - threatTags: readonly ThreatTag[]
+ *  - metadata: {
+ *      - totalSegments: number
+ *      - sanitizedSegments: number
+ *      - processingTimeMs?: number 
+ *  }
  */
 export interface ISLResult {
   readonly segments: readonly ISLSegment[]
   readonly lineage: readonly LineageEntry[]
-  // aipip tags 
+  readonly threatTags: readonly ThreatTag[]
   readonly metadata: {
     readonly totalSegments: number
     readonly sanitizedSegments: number

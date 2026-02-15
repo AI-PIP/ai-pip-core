@@ -422,9 +422,8 @@ FodyWeavers.xsd
 test/
 coverage/
 
-CHANGES_EXPLANATION.md
-TODO.md
-MEJORAS_PROXIMA_VERSION.md
+roadmap.md
+
 
 test-package-install.js
 # Build output

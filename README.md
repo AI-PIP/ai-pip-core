@@ -84,8 +84,9 @@ if (remediationPlan.needsRemediation) {
 
 - **Full README** (examples, use cases, audit, all layers): [docs/readme.md](./docs/readme.md)
 - **Protocol docs** (whitepaper, architecture, layers): [AI-PIP documentation repository](https://github.com/AI-PIP/ai-pip-docs)
-- **Package changelog**: [CHANGELOG.md](./CHANGELOG.md)  
+- **Package changelog**: [CHANGELOG.md](./CHANGELOG.md) — Latest: **0.5.0** (unreleased)  
 - **Features by version**: [FEATURE.md](./FEATURE.md)
+- **Roadmap** (path to 1.0.0): [roadmap.md](./roadmap.md)
 
 ---
 
