@@ -423,7 +423,7 @@ test/
 coverage/
 
 roadmap.md
-
+todo.md
 
 test-package-install.js
 # Build output
